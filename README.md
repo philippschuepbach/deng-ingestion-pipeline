@@ -1,24 +1,103 @@
-# deng-ingestion-pipeline
+# gdelt-ingestion
 
-## 🛠️ Prerequisites & Setup
+## Project Overview
+This project implements a robust data ingestion pipeline for the GDELT dataset, leveraging modern Python practices and tools. The pipeline is designed to be modular, maintainable, and easily deployable using Docker and Terraform. It includes components for fetching the latest GDELT data, downloading and extracting it safely, and loading it into both PostgreSQL and Google BigQuery for further analysis.
 
-This project is built using a modern Data Engineering stack. To ensure reproducibility and performance, follow the setup instructions below.
+## Quick Start
+1. Clone the repository and navigate to the project directory.
+2. Follow the setup instructions in the "Prerequisites & Setup" section below to install necessary tools and dependencies.
+3. Run the pipeline locally using the provided CLI or deploy it using Docker and Terraform.
 
-### 1. Core Requirements
-* **WSL2 (Ubuntu 22.04+):** It is highly recommended to clone this repository directly into the Linux filesystem (`~/`) for optimal performance. Do **not** run this from `/mnt/c/` to avoid I/O lag and permission issues.
-* **uv:** An extremely fast Python package and project manager.
-  * Install via: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-* **Docker Desktop:** Ensure "WSL Integration" is enabled in settings for your specific Ubuntu distribution.
+```bash
+cp .env.example .env
+docker compose up -d
+uv run python -m gdelt_ingestion.cli ingest-local
+```
 
-### 2. Recommended VS Code Extensions
-For a seamless development experience, install the following:
-* **WSL** (`ms-vscode-remote.remote-wsl`) – Run VS Code natively inside Linux.
-* **Python** (`ms-python.python`) – IntelliSense and environment management.
-* **Black Formatter** (`ms-python.black-formatter`) – Auto-formatting on save.
+## Project Structure
 
-### 3. Local Installation
-Once the tools above are installed, run the following commands in your WSL terminal:
+**Key entrypoints:**
+- `src/gdelt_ingestion/cli.py` – main CLI entrypoint (local runs + orchestration hooks)
+- `orchestration/airflow/...` – Airflow DAG definition
+- `orchestration/kestra/...` – workflow definition for Kestra
+- `terraform/` – cloud infrastructure (GCS + BigQuery, etc.)
+- `sql/` – SQL scripts for database setup and queries
+```
+.
+├─ README.md
+├─ docker-compose.yml
+├─ .env.example
+├─ pyproject.toml
+├─ src/
+│  └─ gdelt_ingestion/
+│     ├─ __init__.py
+│     ├─ config.py
+│     ├─ logging_config.py
+│     ├─ cli.py
+│     │
+│     ├─ gdelt/
+│     │  ├─ __init__.py
+│     │  ├─ lastupdate.py
+│     │  ├─ download.py
+│     │  └─ extract.py
+│     │
+│     ├─ storage/
+│     │  ├─ __init__.py
+│     │  ├─ postgres.py
+│     │  ├─ gcs.py
+│     │  └─ bigquery.py
+│     │
+│     ├─ transform/
+│     │  ├─ __init__.py
+│     │  └─ transforms.py
+│     │
+│     └─ orchestration/
+│        ├─ airflow/
+│        │  └─ dags/
+│        │     └─ pipeline_dag.py
+│        └─ kestra/
+│           └─ workflow.yml
+│
+├─ terraform/
+│  ├─ main.tf
+│  ├─ variables.tf
+│  ├─ outputs.tf
+│  └─ README.md
+│
+├─ sql/
+│  ├─ init_postgres.sql
+│  └─ example_queries.sql
+│
+└─ tests/
+   ├─ test_lastupdate.py
+   ├─ test_extract.py
+   └─ ...
+```
 
-1. **Sync the environment:** `uv sync`
-2. **Install pre-commit hooks:** `uv run pre-commit install`
-3. **Verify Installation:** `uv run pre-commit run --all-files`
+## Pipeline Overview
+
+### Local pipeline
+1. **Fetch Latest URL:** Retrieve the latest GDELT data URL from the "lastupdate" endpoint.
+2. **Download Data:** Download the ZIP file from the extracted URL.
+3. **Extract Data:** Safely extract the contents of the ZIP file, ensuring no path traversal vulnerabilities.
+4. **Load to PostgreSQL:** Load the raw data into a PostgreSQL database for initial storage and querying.
+5. **Upload to GCS:** Upload the raw data file to Google Cloud Storage for backup and further processing.
+6. **Load to BigQuery:** Load the data into Google BigQuery for scalable analysis and querying.
+
+### Cloud pipeline
+1. **Upload to GCS:** Upload the raw data file to Google Cloud Storage for backup and further processing.
+2. **Transform Data:** Apply necessary transformations to the raw data to prepare it for analysis (e.g., cleaning, normalization).
+3. **Load to BigQuery:** Load the data into Google BigQuery for scalable analysis and querying.
+
+## Configuration
+All configuration parameters (e.g., database credentials, GCP settings, file paths) are managed through environment variables. A `.env.example` file is provided as a template. Make sure to create a `.env` file with the appropriate values before running the pipeline.
+
+## Development & Testing
+The project includes unit tests for critical components. To run the tests, use the following command:
+```
+uv run pytest
+```
+Make sure to have the necessary test dependencies installed in your environment.
+
+## Terraform & Deployment
+The `terraform/` directory contains infrastructure-as-code definitions for deploying the pipeline on cloud platforms. Follow the instructions in `terraform/README.md` for setting up and deploying the infrastructure.
