@@ -208,6 +208,7 @@ __marimo__/
 
 # Ignore everything in the data folder
 data/*
+/src/gdelt_ingestion/data/*
 
 # But do not ignore the .gitkeep file itself
 !data/.gitkeep
