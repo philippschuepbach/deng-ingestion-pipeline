@@ -1,6 +1,10 @@
+from __future__ import annotations
 import os
 import sys
 from loguru import logger
+
+from dataclasses import dataclass
+from pathlib import Path
 
 
 def configure_logging(level: str | None = None) -> None:
@@ -18,3 +22,13 @@ def configure_logging(level: str | None = None) -> None:
         level=log_level,
         format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {message}",
     )
+
+@dataclass
+class Settings:
+    raw_data_dir: Path = Path("data/raw")
+    lookup_dir: Path = Path("data/lookups")
+
+
+def load_settings() -> Settings:
+    """Load application settings."""
+    return Settings()
