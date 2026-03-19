@@ -2,27 +2,26 @@ services:
   pgdatabase:
     image: postgres:18
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      POSTGRES_DB: "gdelt"
     volumes:
-      - dip_postgres_data:/var/lib/postgresql/data:rw
-      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+      - "gdelt_data:/var/lib/postgresql"
     ports:
       - "5432:5432"
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: "root@root.ch"
+      PGADMIN_DEFAULT_PASSWORD: "root"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - "pgadmin_data:/var/lib/pgadmin"
     ports:
       - "8085:80"
-    depends_on:
-      - pgdatabase
+
+
 
 volumes:
-  dip_postgres_data:
+  gdelt_data:
   pgadmin_data:
