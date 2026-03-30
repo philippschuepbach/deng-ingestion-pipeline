@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from .gdelt.lookup import get_latest_gdelt_url
-from .gdelt.download import download_file
-from .gdelt.extract import extract_single_file
+from ..gdelt.lookup import get_latest_gdelt_url
+from ..gdelt.download import download_file
+from ..gdelt.extract import extract_single_file
 
 
 def fetch_latest_gdelt(

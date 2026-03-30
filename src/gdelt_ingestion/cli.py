@@ -1,13 +1,24 @@
+from __future__ import annotations
+
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from loguru import logger
 
+from gdelt_ingestion.cli_args import add_relative_time_args
 from gdelt_ingestion.constants import GDELT_LAST_UPDATE_URL
-from gdelt_ingestion.funnel import fetch_latest_gdelt
+from gdelt_ingestion.gdelt.masterlist import (
+    iter_urls_in_range_from_file,
+    iter_urls_in_range_from_url,
+)
+from gdelt_ingestion.jobs.fetch_latest import fetch_latest_gdelt
 from gdelt_ingestion.jobs.fetch_lookups import run as run_fetch_lookups
 from gdelt_ingestion.jobs.ingest_lookups import run as run_ingest_lookups
 from gdelt_ingestion.logging_config import configure_logging, load_settings
+from gdelt_ingestion.time_window import resolve_relative_window
+from gdelt_ingestion.jobs.fetch_exports_from_masterlist import (
+    run as run_fetch_exports_from_masterlist,
+)
 
 
 def add_postgres_args(parser: ArgumentParser) -> None:
@@ -104,11 +115,75 @@ def build_parser() -> ArgumentParser:
     )
     add_postgres_args(sync_lookup_parser)
 
+    # ---- list-master-urls ----
+    master_parser = subparsers.add_parser(
+        "list-master-urls",
+        help="List GDELT file URLs from a master list for a relative time window.",
+    )
+
+    master_source_group = master_parser.add_mutually_exclusive_group(required=True)
+    master_source_group.add_argument(
+        "--master-url",
+        help="Remote URL of the GDELT master list",
+    )
+    master_source_group.add_argument(
+        "--master-file",
+        type=Path,
+        help="Local file path of a previously downloaded GDELT master list",
+    )
+
+    master_parser.add_argument(
+        "--file-type",
+        action="append",
+        choices=["export", "mentions", "gkg"],
+        help=(
+            "GDELT file type to include. Can be repeated, e.g. "
+            "--file-type export --file-type gkg. "
+            "Defaults to all file types if omitted."
+        ),
+    )
+    add_relative_time_args(master_parser)
+
+    fetch_exports_parser = subparsers.add_parser(
+        "fetch-exports-from-masterlist",
+        help="Download and extract GDELT export files from a master list for a relative time window.",
+    )
+
+    master_source_group = fetch_exports_parser.add_mutually_exclusive_group(
+        required=True
+    )
+    master_source_group.add_argument(
+        "--master-url",
+        help="Remote URL of the GDELT master list",
+    )
+    master_source_group.add_argument(
+        "--master-file",
+        type=Path,
+        help="Local file path of a previously downloaded GDELT master list",
+    )
+
+    fetch_exports_parser.add_argument(
+        "--raw-data-dir",
+        type=Path,
+        default=Path("data/raw"),
+        help="Directory for downloaded and extracted GDELT export files",
+    )
+    fetch_exports_parser.add_argument(
+        "--delete-zip",
+        action="store_true",
+        help="Delete ZIP files after successful extraction",
+    )
+    fetch_exports_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing ZIP and extracted files",
+    )
+    add_relative_time_args(fetch_exports_parser)
+
     return parser
 
 
 def main() -> None:
-    print("Hello World")
     parser = build_parser()
     args: Namespace = parser.parse_args()
 
@@ -157,6 +232,60 @@ def main() -> None:
             schema=args.schema,
         )
         logger.success("Lookup files downloaded and ingested successfully")
+
+    elif args.command == "list-master-urls":
+        start_ts, end_ts = resolve_relative_window(
+            years=args.years,
+            months=args.months,
+            days=args.days,
+        )
+
+        logger.info(
+            "Resolved relative time window to {} .. {} (UTC)",
+            start_ts,
+            end_ts,
+        )
+
+        if args.master_url:
+            urls = iter_urls_in_range_from_url(
+                master_url=args.master_url,
+                start_ts=start_ts,
+                end_ts=end_ts,
+                file_types=args.file_type,
+            )
+        else:
+            urls = iter_urls_in_range_from_file(
+                master_file=args.master_file,
+                start_ts=start_ts,
+                end_ts=end_ts,
+                file_types=args.file_type,
+            )
+
+        count = 0
+        for url in urls:
+            print(url)
+            count += 1
+
+        logger.success("Found {} matching GDELT file URL(s)", count)
+
+    elif args.command == "fetch-exports-from-masterlist":
+        start_ts, end_ts = resolve_relative_window(
+            years=args.years,
+            months=args.months,
+            days=args.days,
+        )
+
+        paths = run_fetch_exports_from_masterlist(
+            start_ts=start_ts,
+            end_ts=end_ts,
+            raw_data_dir=args.raw_data_dir,
+            master_url=args.master_url,
+            master_file=args.master_file,
+            delete_zip=args.delete_zip,
+            overwrite=args.overwrite,
+        )
+
+        logger.success("Fetched {} export file(s)", len(paths))
 
     else:
         parser.error(f"Unknown command: {args.command}")
