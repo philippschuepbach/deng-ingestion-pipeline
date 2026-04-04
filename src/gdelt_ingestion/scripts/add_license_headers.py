@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-PROJECT_NAME = "gdelt-ingestion-pipeline"
+PROJECT_NAME = "deng-ingestion-pipeline"
 COPYRIGHT_OWNER = "Philipp Schüpbach Schüpbach"
 
 HEADER = f"""# Copyright (C) 2026 {COPYRIGHT_OWNER}
@@ -25,13 +25,9 @@ HEADER = f"""# Copyright (C) 2026 {COPYRIGHT_OWNER}
 
 HEADER_MARKER = "GNU Affero General Public License"
 
-OLD_PROJECT_NAMES = [
-    "gdelt-ingestion-pipeline",
-]
+OLD_PROJECT_NAMES = ["deng-ingestion-pipeline"]
 
-OLD_COPYRIGHT_OWNERS = [
-    "Philipp Schüpbach",
-]
+OLD_COPYRIGHT_OWNERS = []
 
 
 def split_special_prefix(text: str) -> tuple[str, str]:
