@@ -38,8 +38,8 @@ from deng_ingestion.jobs.transform_events import (
     build_transform_all_events_job,
     build_transform_events_job,
 )
-from deng_ingestion.pipeline.context import PipelineContext
 from deng_ingestion.paths import PROJECT_ROOT
+from deng_ingestion.pipeline.context import PipelineContext
 
 
 def _build_context(
@@ -52,6 +52,14 @@ def _build_context(
         execution_ts=ts,
         working_dir=PROJECT_ROOT,
     )
+
+
+def _has_backfill_window(args: Namespace) -> bool:
+    years = getattr(args, "years", 0)
+    months = getattr(args, "months", 0)
+    days = getattr(args, "days", 0)
+
+    return (years > 0) or (months > 0) or (days > 0)
 
 
 def handle_manifest_incremental(args: Namespace) -> None:
@@ -233,6 +241,30 @@ def handle_gold_build(args: Namespace) -> None:
     logger.info("Finished gold build: gold_row_count={}", gold_row_count)
 
 
+def handle_quickstart(args: Namespace) -> None:
+    logger.info("Starting quickstart")
+
+    handle_lookups_load(args)
+
+    if _has_backfill_window(args):
+        logger.info(
+            "Quickstart selected backfill mode: years={}, months={}, days={}",
+            args.years,
+            args.months,
+            args.days,
+        )
+        handle_manifest_backfill(args)
+    else:
+        logger.info("Quickstart selected incremental mode")
+        handle_manifest_incremental(args)
+
+    handle_export_ingest_all(args)
+    handle_silver_transform_all(args)
+    handle_gold_build(args)
+
+    logger.info("Finished quickstart")
+
+
 def dispatch(args: Namespace) -> None:
     if args.command == "manifest":
         if args.manifest_command == "incremental":
@@ -270,6 +302,10 @@ def dispatch(args: Namespace) -> None:
         if args.gold_command == "build":
             handle_gold_build(args)
             return
+
+    if args.command == "quickstart":
+        handle_quickstart(args)
+        return
 
     raise ValueError(
         "Unsupported CLI command combination: "

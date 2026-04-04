@@ -55,8 +55,8 @@ def add_relative_time_args(parser: argparse.ArgumentParser) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="deng-ingestion",
-        description="DENG ingestion pipeline CLI",
+        prog="gdelt-ingestion",
+        description="Geopolitical risk ingestion pipeline CLI",
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -161,5 +161,14 @@ def build_parser() -> argparse.ArgumentParser:
         "build",
         help="Rebuild the gold aggregation table from all silver events",
     )
+
+    # ------------------------------------------------------------
+    # quickstart
+    # ------------------------------------------------------------
+    quickstart_parser = subparsers.add_parser(
+        "quickstart",
+        help="Run the full local pipeline end-to-end",
+    )
+    add_relative_time_args(quickstart_parser)
 
     return parser
