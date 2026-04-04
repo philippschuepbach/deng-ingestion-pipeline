@@ -14,10 +14,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+from typing import Protocol
+from dataclasses import dataclass
 
-__all__ = ["configure_logging"]
+from gdelt_ingestion.pipeline.context import PipelineContext
 
-__version__ = "0.1.0"
+
+class PipelineStep(Protocol):
+    name: str
+
+    def run(self, context: PipelineContext) -> None: ...
+
+
+@dataclass(frozen=True)
+class StepResult:
+    rows_processed: int = 0
+    message: str = ""

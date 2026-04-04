@@ -14,10 +14,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+from gdelt_ingestion.cli.handlers import dispatch
+from gdelt_ingestion.cli.parser import build_parser
 
-__all__ = ["configure_logging"]
 
-__version__ = "0.1.0"
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+    dispatch(args)
+
+
+if __name__ == "__main__":
+    main()

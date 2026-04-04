@@ -14,10 +14,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+from gdelt_ingestion.pipeline.job import PipelineJob
+from gdelt_ingestion.steps.download_lookup_files import DownloadLookupFilesStep
+from gdelt_ingestion.steps.load_lookup_dimensions import LoadLookupDimensionsStep
+from gdelt_ingestion.steps.seed_risk_category_mapping import SeedRiskCategoryMappingStep
 
-__all__ = ["configure_logging"]
 
-__version__ = "0.1.0"
+def build_load_lookups_job() -> PipelineJob:
+    return PipelineJob(
+        name="load_lookups",
+        steps=[
+            DownloadLookupFilesStep(),
+            LoadLookupDimensionsStep(),
+            SeedRiskCategoryMappingStep(),
+        ],
+    )

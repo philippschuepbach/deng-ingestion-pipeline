@@ -14,10 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+from gdelt_ingestion.pipeline.job import PipelineJob
+from gdelt_ingestion.steps.build_risk_alerts_gold import BuildRiskAlertsGoldStep
 
-__all__ = ["configure_logging"]
 
-__version__ = "0.1.0"
+def build_risk_alerts_gold_job() -> PipelineJob:
+    return PipelineJob(
+        name="build_risk_alerts_gold",
+        steps=[
+            BuildRiskAlertsGoldStep(),
+        ],
+    )

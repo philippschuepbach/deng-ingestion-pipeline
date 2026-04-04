@@ -14,10 +14,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+GDELT_LOOKUPS_BASE_URL = "https://www.gdeltproject.org/data/lookups/"
 
-__all__ = ["configure_logging"]
-
-__version__ = "0.1.0"
+GDELT_LOOKUP_FILES: list[str] = [
+    "CAMEO.country.txt",
+    "FIPS.country.txt",
+    "CAMEO.type.txt",
+    "CAMEO.knowngroup.txt",
+    "CAMEO.ethnic.txt",
+    "CAMEO.religion.txt",
+    "CAMEO.eventcodes.txt",
+    "CAMEO.goldsteinscale.txt",
+]

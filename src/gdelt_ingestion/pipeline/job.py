@@ -15,37 +15,29 @@
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import os
-import sys
-from loguru import logger
 
 from dataclasses import dataclass
-from pathlib import Path
+from collections.abc import Sequence
+from loguru import logger
+
+from gdelt_ingestion.pipeline.context import PipelineContext
+from gdelt_ingestion.pipeline.types import PipelineStep
 
 
-def configure_logging(level: str | None = None) -> None:
-    """Configure Loguru to log to stderr (container-friendly).
+@dataclass(frozen=True)
+class PipelineJob:
+    name: str
+    steps: Sequence[PipelineStep]
 
-    Idempotent: safe to call multiple times (replaces existing handlers).
-    """
-    log_level = level or os.getenv("LOG_LEVEL", "INFO")
+    def run(self, context: PipelineContext) -> None:
+        logger.info("Starting pipeline job: {}", self.name)
 
-    # Ensure we don't end up with duplicate log handlers if called again.
-    logger.remove()
+        for step in self.steps:
+            logger.info("Running pipeline step: {}", step.name)
+            try:
+                step.run(context)
+            except Exception:
+                logger.exception("Pipeline step failed: {}", step.name)
+                raise
 
-    logger.add(
-        sys.stderr,
-        level=log_level,
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {message}",
-    )
-
-
-@dataclass
-class Settings:
-    raw_data_dir: Path = Path("data/raw")
-    lookup_dir: Path = Path("data/lookups")
-
-
-def load_settings() -> Settings:
-    """Load application settings."""
-    return Settings()
+        logger.info("Finished pipeline job: {}", self.name)

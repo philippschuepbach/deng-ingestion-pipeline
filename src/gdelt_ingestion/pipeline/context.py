@@ -14,10 +14,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+from dataclasses import dataclass, field
+from pathlib import Path
+from datetime import datetime
+from typing import Any
 
-__all__ = ["configure_logging"]
 
-__version__ = "0.1.0"
+@dataclass
+class PipelineContext:
+    run_id: str
+    execution_ts: datetime
+    working_dir: Path
+    data: dict[str, Any] = field(default_factory=dict)

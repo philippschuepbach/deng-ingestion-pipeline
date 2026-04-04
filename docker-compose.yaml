@@ -7,6 +7,8 @@ services:
       POSTGRES_DB: "gdelt"
     volumes:
       - "gdelt_data:/var/lib/postgresql"
+      - "./sql:/docker-entrypoint-initdb.d:ro"
+
     ports:
       - "5432:5432"
 

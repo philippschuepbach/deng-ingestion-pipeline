@@ -15,37 +15,31 @@
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import os
-import sys
-from loguru import logger
 
-from dataclasses import dataclass
-from pathlib import Path
+from gdelt_ingestion.pipeline.job import PipelineJob
+from gdelt_ingestion.steps.select_pending_silver_batch import (
+    SelectPendingSilverBatchStep,
+)
+from gdelt_ingestion.steps.transform_all_pending_batches_to_silver import (
+    TransformAllPendingBatchesToSilverStep,
+)
+from gdelt_ingestion.steps.transform_batch_to_silver import TransformBatchToSilverStep
 
 
-def configure_logging(level: str | None = None) -> None:
-    """Configure Loguru to log to stderr (container-friendly).
-
-    Idempotent: safe to call multiple times (replaces existing handlers).
-    """
-    log_level = level or os.getenv("LOG_LEVEL", "INFO")
-
-    # Ensure we don't end up with duplicate log handlers if called again.
-    logger.remove()
-
-    logger.add(
-        sys.stderr,
-        level=log_level,
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {message}",
+def build_transform_events_job() -> PipelineJob:
+    return PipelineJob(
+        name="transform_events",
+        steps=[
+            SelectPendingSilverBatchStep(),
+            TransformBatchToSilverStep(),
+        ],
     )
 
 
-@dataclass
-class Settings:
-    raw_data_dir: Path = Path("data/raw")
-    lookup_dir: Path = Path("data/lookups")
-
-
-def load_settings() -> Settings:
-    """Load application settings."""
-    return Settings()
+def build_transform_all_events_job() -> PipelineJob:
+    return PipelineJob(
+        name="transform_all_events",
+        steps=[
+            TransformAllPendingBatchesToSilverStep(),
+        ],
+    )

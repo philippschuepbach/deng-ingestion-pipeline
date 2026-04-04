@@ -14,10 +14,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
-"""GDELT ingestion pipeline package."""
+from __future__ import annotations
 
-from .logging_config import configure_logging
+from dataclasses import dataclass
+from datetime import datetime
 
-__all__ = ["configure_logging"]
 
-__version__ = "0.1.0"
+@dataclass(frozen=True)
+class ManifestEntry:
+    file_size_bytes: int
+    md5_hash: str
+    source_url: str
+    file_name: str
+    gdelt_timestamp: datetime
+    file_type: str
