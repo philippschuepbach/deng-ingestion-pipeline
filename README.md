@@ -101,3 +101,11 @@ Make sure to have the necessary test dependencies installed in your environment.
 
 ## Terraform & Deployment
 The `terraform/` directory contains infrastructure-as-code definitions for deploying the pipeline on cloud platforms. Follow the instructions in `terraform/README.md` for setting up and deploying the infrastructure.
+
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 or later
+(AGPL-3.0-or-later).
+
+See the [LICENSE](./LICENSE) file for the full license text.
