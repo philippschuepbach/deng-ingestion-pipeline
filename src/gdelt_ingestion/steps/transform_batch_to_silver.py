@@ -31,7 +31,7 @@ class TransformBatchToSilverStep:
     def run(self, context: PipelineContext) -> None:
         batch = context.data.get("current_silver_batch")
         if batch is None:
-            logger.info("Skipping silver transformation because no batch is selected")
+            logger.debug("Skipping silver transformation because no batch is selected")
             return
 
         logger.info(

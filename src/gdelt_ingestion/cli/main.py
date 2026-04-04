@@ -18,9 +18,12 @@ from __future__ import annotations
 
 from gdelt_ingestion.cli.handlers import dispatch
 from gdelt_ingestion.cli.parser import build_parser
+from gdelt_ingestion.logging_config import configure_logging
 
 
 def main() -> None:
+    configure_logging()
+
     parser = build_parser()
     args = parser.parse_args()
     dispatch(args)

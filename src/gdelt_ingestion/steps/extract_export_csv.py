@@ -32,7 +32,7 @@ class ExtractExportCsvStep:
     def run(self, context: PipelineContext) -> None:
         batch = context.data.get("current_batch")
         if batch is None:
-            logger.info("Skipping extraction because no batch is selected")
+            logger.debug("Skipping extraction because no batch is selected")
             return
 
         archive_path: Path = context.data["archive_path"]

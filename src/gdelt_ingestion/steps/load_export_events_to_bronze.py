@@ -37,7 +37,7 @@ class LoadExportEventsToBronzeStep:
     def run(self, context: PipelineContext) -> None:
         batch = context.data.get("current_batch")
         if batch is None:
-            logger.info("Skipping bronze load because no batch is selected")
+            logger.debug("Skipping bronze load because no batch is selected")
             return
 
         csv_path: Path = context.data["extracted_csv_path"]

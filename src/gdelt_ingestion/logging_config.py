@@ -15,37 +15,40 @@
 # along with gdelt-ingestion-pipeline. If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
 import os
 import sys
-from loguru import logger
-
-from dataclasses import dataclass
 from pathlib import Path
 
+from dotenv import load_dotenv
+from loguru import logger
 
-def configure_logging(level: str | None = None) -> None:
-    """Configure Loguru to log to stderr (container-friendly).
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(PROJECT_ROOT / ".env")
 
-    Idempotent: safe to call multiple times (replaces existing handlers).
-    """
-    log_level = level or os.getenv("LOG_LEVEL", "INFO")
 
-    # Ensure we don't end up with duplicate log handlers if called again.
+VALID_LOG_LEVELS = {"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"}
+
+
+def configure_logging() -> None:
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+
+    if log_level not in VALID_LOG_LEVELS:
+        raise ValueError(
+            f"Invalid LOG_LEVEL={log_level!r}. "
+            f"Expected one of: {', '.join(sorted(VALID_LOG_LEVELS))}"
+        )
+
     logger.remove()
 
     logger.add(
         sys.stderr,
         level=log_level,
-        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {message}",
+        colorize=True,
+        format=(
+            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+            "<level>{level:<8}</level> | "
+            "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+            "<level>{message}</level>"
+        ),
     )
-
-
-@dataclass
-class Settings:
-    raw_data_dir: Path = Path("data/raw")
-    lookup_dir: Path = Path("data/lookups")
-
-
-def load_settings() -> Settings:
-    """Load application settings."""
-    return Settings()

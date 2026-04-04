@@ -33,7 +33,7 @@ class DownloadExportArchiveStep:
     def run(self, context: PipelineContext) -> None:
         batch = context.data.get("current_batch")
         if batch is None:
-            logger.info("Skipping archive download because no batch is selected")
+            logger.debug("Skipping archive download because no batch is selected")
             return
 
         archives_dir = context.working_dir / "data" / "raw" / "archives"
@@ -54,7 +54,7 @@ class DownloadExportArchiveStep:
             ):
                 target.write(response.read())
         else:
-            logger.info(
+            logger.debug(
                 "Archive already exists locally, reusing file: batch_id={}, path={}",
                 batch["batch_id"],
                 archive_path,

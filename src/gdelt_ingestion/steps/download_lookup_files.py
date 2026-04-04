@@ -44,7 +44,7 @@ class DownloadLookupFilesStep:
             target_path = lookup_dir / file_name
 
             if target_path.exists():
-                logger.info(
+                logger.debug(
                     "Lookup file already exists locally, reusing file: {}", target_path
                 )
                 reused_files.append(file_name)
