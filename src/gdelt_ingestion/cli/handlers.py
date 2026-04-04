@@ -39,6 +39,7 @@ from gdelt_ingestion.jobs.transform_events import (
     build_transform_events_job,
 )
 from gdelt_ingestion.pipeline.context import PipelineContext
+from gdelt_ingestion.paths import PROJECT_ROOT
 
 
 def _build_context(
@@ -49,7 +50,7 @@ def _build_context(
     return PipelineContext(
         run_id=run_id,
         execution_ts=ts,
-        working_dir=Path.cwd(),
+        working_dir=PROJECT_ROOT,
     )
 
 
