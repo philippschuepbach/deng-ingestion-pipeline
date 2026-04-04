@@ -22,7 +22,27 @@ services:
     ports:
       - "8085:80"
 
-
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: pgdatabase
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: gdelt
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      UV_LINK_MODE: copy
+    volumes:
+      - .:/app
+      - /app/.venv
+    depends_on:
+      - pgdatabase
+    profiles:
+    - manual
 
 volumes:
   gdelt_data:
