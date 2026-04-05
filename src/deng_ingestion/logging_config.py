@@ -10,7 +10,6 @@ from loguru import logger
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(PROJECT_ROOT / ".env")
 
-
 VALID_LOG_LEVELS = {"TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"}
 
 
@@ -25,14 +24,24 @@ def configure_logging() -> None:
 
     logger.remove()
 
+    log_format = (
+        "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level:<8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+        "<level>{message}</level>"
+    )
+
     logger.add(
-        sys.stderr,
+        sys.stdout,
         level=log_level,
         colorize=True,
-        format=(
-            "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-            "<level>{level:<8}</level> | "
-            "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
-            "<level>{message}</level>"
-        ),
+        format=log_format,
+        filter=lambda record: record["level"].no < logger.level("ERROR").no,
+    )
+
+    logger.add(
+        sys.stderr,
+        level="ERROR",
+        colorize=True,
+        format=log_format,
     )

@@ -1,0 +1,13 @@
+id: load_lookups
+namespace: hslu.geopolitical_risk.subflows
+labels:
+  name: run_load_lookups
+
+tasks:
+  - id: run_load_lookups
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - cd /workspace
+      - uv run --no-dev --no-sync deng-ingestion lookups load

@@ -1,14 +1,14 @@
 FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
 
 WORKDIR /app
+ENV PATH="/app/.venv/bin:$PATH"
 
-RUN pip install uv
-
-COPY pyproject.toml ./
+COPY pyproject.toml .python-version uv.lock ./
 COPY README.md ./
 COPY src ./src
 COPY sql ./sql
 
-RUN uv sync --frozen || uv sync
+RUN uv sync --locked --no-dev
 
-CMD ["tail", "-f", "/dev/null"]
+CMD ["uv", "run", "--no-dev", "python", "-m", "deng_ingestion.cli.main", "--help"]

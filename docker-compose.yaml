@@ -8,9 +8,15 @@ services:
     volumes:
       - "gdelt_data:/var/lib/postgresql"
       - "./sql:/docker-entrypoint-initdb.d:ro"
-
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - pipeline_net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -21,29 +27,123 @@ services:
       - "pgadmin_data:/var/lib/pgadmin"
     ports:
       - "8085:80"
+    depends_on:
+      pgdatabase:
+        condition: service_healthy
+    networks:
+      - pipeline_net
 
   pipeline:
+    image: geopolitical-risk-ingestion-pipeline:latest
     build:
       context: .
       dockerfile: Dockerfile
     working_dir: /app
-    env_file:
-      - .env
     environment:
       POSTGRES_HOST: pgdatabase
       POSTGRES_PORT: 5432
       POSTGRES_DB: gdelt
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
+      LOG_LEVEL: INFO
       UV_LINK_MODE: copy
     volumes:
-      - .:/app
-      - /app/.venv
+      - ".:/app"
+      - "/app/.venv"
     depends_on:
-      - pgdatabase
+      pgdatabase:
+        condition: service_healthy
     profiles:
-    - manual
+      - manual
+    networks:
+      - pipeline_net
+
+  kestra_postgres:
+    image: postgres:18
+    volumes:
+      - "kestra_postgres_data:/var/lib/postgresql"
+    environment:
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: k3str4
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - pipeline_net
+
+  kestra:
+    build:
+      context: .
+      dockerfile: Dockerfile.kestra
+    volumes:
+      - "kestra_data:/app/storage"
+      - "kestra_tmp:/tmp/kestra-wd"
+      - "./kestra/flows:/flows"
+      - ".:/workspace"
+      - "kestra_workspace_venv:/workspace/.venv"
+      - "kestra_uv_cache:/root/.cache/uv"
+    environment:
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://kestra_postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: kestra
+            password: k3str4
+        micronaut:
+          io:
+            watch:
+              enabled: true
+              paths:
+                - /flows
+        kestra:
+          tutorial-flows:
+            enabled: false
+          server:
+            basicAuth:
+              username: "admin@kestra.io"
+              password: "Admin1234!"
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              basePath: "/app/storage"
+          queue:
+            type: postgres
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
+          url: http://localhost:8080/
+      POSTGRES_HOST: pgdatabase
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: gdelt
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      LOG_LEVEL: INFO
+      UV_LINK_MODE: copy
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      kestra_postgres:
+        condition: service_healthy
+      pgdatabase:
+        condition: service_healthy
+    networks:
+      - pipeline_net
 
 volumes:
   gdelt_data:
   pgadmin_data:
+  kestra_postgres_data:
+  kestra_data:
+  kestra_tmp:
+  kestra_workspace_venv:
+  kestra_uv_cache:
+
+networks:
+  pipeline_net:

@@ -39,7 +39,7 @@ def add_relative_time_args(parser: argparse.ArgumentParser) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="gdelt-ingestion",
+        prog="deng-ingestion",
         description="Geopolitical risk ingestion pipeline CLI",
     )
 

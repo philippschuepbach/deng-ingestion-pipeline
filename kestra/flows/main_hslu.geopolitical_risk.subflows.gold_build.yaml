@@ -1,0 +1,13 @@
+id: gold_build
+namespace: hslu.geopolitical_risk.subflows
+labels:
+  name: run_gold_build
+
+tasks:
+  - id: run_gold_build
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - cd /workspace
+      - uv run --no-dev --no-sync deng-ingestion gold build

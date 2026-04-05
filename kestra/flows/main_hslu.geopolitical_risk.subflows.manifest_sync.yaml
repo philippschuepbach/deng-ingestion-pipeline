@@ -1,0 +1,33 @@
+id: manifest_sync
+namespace: hslu.geopolitical_risk.subflows
+labels:
+  name: run_manifest_sync
+
+inputs:
+  - id: years
+    type: INT
+    defaults: 0
+  - id: months
+    type: INT
+    defaults: 0
+  - id: days
+    type: INT
+    defaults: 0
+
+tasks:
+  - id: run_manifest_sync
+    type: io.kestra.plugin.scripts.shell.Script
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    script: |
+      set -eu
+      cd /workspace
+
+      if [ "{{ inputs.years }}" != "0" ] || [ "{{ inputs.months }}" != "0" ] || [ "{{ inputs.days }}" != "0" ]; then
+        uv run --no-dev --no-sync deng-ingestion manifest backfill \
+          --years {{ inputs.years }} \
+          --months {{ inputs.months }} \
+          --days {{ inputs.days }}
+      else
+        uv run --no-dev --no-sync deng-ingestion manifest incremental
+      fi

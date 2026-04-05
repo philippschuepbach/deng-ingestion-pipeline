@@ -1,0 +1,10 @@
+FROM kestra/kestra:v1.1
+
+USER root
+
+RUN python -m pip install --no-cache-dir uv
+
+COPY docker/kestra-entrypoint.sh /usr/local/bin/kestra-entrypoint.sh
+RUN chmod +x /usr/local/bin/kestra-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/kestra-entrypoint.sh"]
