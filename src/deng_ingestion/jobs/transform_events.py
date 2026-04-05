@@ -8,6 +8,9 @@ from deng_ingestion.steps.transform_all_pending_batches_to_silver import (
     TransformAllPendingBatchesToSilverStep,
 )
 from deng_ingestion.steps.transform_batch_to_silver import TransformBatchToSilverStep
+from deng_ingestion.steps.transform_registered_batches_to_silver import (
+    TransformRegisteredBatchesToSilverStep,
+)
 
 
 def build_transform_events_job() -> PipelineJob:
@@ -25,5 +28,14 @@ def build_transform_all_events_job() -> PipelineJob:
         name="transform_all_events",
         steps=[
             TransformAllPendingBatchesToSilverStep(),
+        ],
+    )
+
+
+def build_transform_registered_events_job() -> PipelineJob:
+    return PipelineJob(
+        name="transform_registered_events",
+        steps=[
+            TransformRegisteredBatchesToSilverStep(),
         ],
     )

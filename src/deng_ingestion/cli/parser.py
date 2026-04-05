@@ -90,6 +90,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Download, extract, and load all currently pending export batches into bronze",
     )
 
+    export_subparsers.add_parser(
+        "ingest-current-run",
+        help="Internal/debug command: load export batches registered in the current pipeline context",
+    )
+
     # ------------------------------------------------------------
     # lookups
     # ------------------------------------------------------------
@@ -144,6 +149,23 @@ def build_parser() -> argparse.ArgumentParser:
     gold_subparsers.add_parser(
         "build",
         help="Rebuild the gold aggregation table from all silver events",
+    )
+
+    # ------------------------------------------------------------
+    # pipeline
+    # ------------------------------------------------------------
+    pipeline_parser = subparsers.add_parser(
+        "pipeline",
+        help="Combined pipeline commands",
+    )
+    pipeline_subparsers = pipeline_parser.add_subparsers(
+        dest="pipeline_command",
+        required=True,
+    )
+
+    pipeline_subparsers.add_parser(
+        "incremental",
+        help="Run manifest incremental, export ingest-current-run, silver transform-current-run, and gold build in a single pipeline context",
     )
 
     # ------------------------------------------------------------

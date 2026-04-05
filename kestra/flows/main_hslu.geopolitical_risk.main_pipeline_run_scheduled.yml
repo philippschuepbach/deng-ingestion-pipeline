@@ -1,0 +1,21 @@
+id: pipeline_run_scheduled
+namespace: hslu.geopolitical_risk.main
+
+labels:
+  name: pipeline_run_scheduled
+
+tasks:
+  - id: run_incremental_pipeline
+    type: io.kestra.plugin.scripts.shell.Script
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    script: |
+      set -eu
+      cd /workspace
+      uv run --no-dev --no-sync deng-ingestion pipeline incremental
+
+triggers:
+  - id: every_15_minutes
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "*/15 * * * *"
+    timezone: Europe/Zurich

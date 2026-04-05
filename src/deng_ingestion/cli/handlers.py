@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from argparse import Namespace
 from datetime import UTC, datetime
-from pathlib import Path
 
 from dateutil.relativedelta import relativedelta
 from loguru import logger
@@ -12,12 +11,16 @@ from deng_ingestion.jobs.build_risk_alerts_gold import build_risk_alerts_gold_jo
 from deng_ingestion.jobs.ingest_export_events import (
     build_ingest_all_export_events_job,
     build_ingest_export_events_job,
+    build_ingest_registered_export_events_job,
 )
 from deng_ingestion.jobs.ingest_manifest import (
     build_backfill_manifest_job,
     build_incremental_manifest_job,
 )
 from deng_ingestion.jobs.load_lookups import build_load_lookups_job
+from deng_ingestion.jobs.run_incremental_pipeline import (
+    build_incremental_pipeline_job,
+)
 from deng_ingestion.jobs.transform_events import (
     build_transform_all_events_job,
     build_transform_events_job,
@@ -137,6 +140,24 @@ def handle_export_ingest_all(args: Namespace) -> None:
     logger.info("Finished export ingest-all: processed_batches={}", processed_batches)
 
 
+def handle_export_ingest_current_run(args: Namespace) -> None:
+    logger.info("Starting export ingest-current-run")
+
+    job = build_ingest_registered_export_events_job()
+    context = _build_context("export_ingest_current_run")
+
+    job.run(context)
+
+    processed_batches = context.data.get("processed_batches", 0)
+    ingested_export_batch_ids = context.data.get("ingested_export_batch_ids", [])
+
+    logger.info(
+        "Finished export ingest-current-run: processed_batches={}, ingested_export_batch_ids={}",
+        processed_batches,
+        ingested_export_batch_ids,
+    )
+
+
 def handle_lookups_load(args: Namespace) -> None:
     logger.info("Starting lookup load")
 
@@ -225,6 +246,23 @@ def handle_gold_build(args: Namespace) -> None:
     logger.info("Finished gold build: gold_row_count={}", gold_row_count)
 
 
+def handle_pipeline_incremental(args: Namespace) -> None:
+    logger.info("Starting pipeline incremental")
+
+    job = build_incremental_pipeline_job()
+    context = _build_context("pipeline_incremental")
+
+    job.run(context)
+
+    logger.info(
+        "Finished pipeline incremental: registered_export_batch_ids={}, ingested_export_batch_ids={}, transformed_export_batch_ids={}, gold_row_count={}",
+        context.data.get("registered_export_batch_ids", []),
+        context.data.get("ingested_export_batch_ids", []),
+        context.data.get("transformed_export_batch_ids", []),
+        context.data.get("gold_row_count", 0),
+    )
+
+
 def handle_quickstart(args: Namespace) -> None:
     logger.info("Starting quickstart")
 
@@ -268,6 +306,10 @@ def dispatch(args: Namespace) -> None:
             handle_export_ingest_all(args)
             return
 
+        if args.export_command == "ingest-current-run":
+            handle_export_ingest_current_run(args)
+            return
+
     if args.command == "lookups":
         if args.lookups_command == "load":
             handle_lookups_load(args)
@@ -287,6 +329,11 @@ def dispatch(args: Namespace) -> None:
             handle_gold_build(args)
             return
 
+    if args.command == "pipeline":
+        if args.pipeline_command == "incremental":
+            handle_pipeline_incremental(args)
+            return
+
     if args.command == "quickstart":
         handle_quickstart(args)
         return
@@ -298,5 +345,6 @@ def dispatch(args: Namespace) -> None:
         f"export_command={getattr(args, 'export_command', None)}, "
         f"lookups_command={getattr(args, 'lookups_command', None)}, "
         f"silver_command={getattr(args, 'silver_command', None)}, "
-        f"gold_command={getattr(args, 'gold_command', None)}"
+        f"gold_command={getattr(args, 'gold_command', None)}, "
+        f"pipeline_command={getattr(args, 'pipeline_command', None)}"
     )
