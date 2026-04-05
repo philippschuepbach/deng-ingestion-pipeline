@@ -5,6 +5,10 @@ from pathlib import Path
 
 from loguru import logger
 
+from deng_ingestion.steps.export.batch_status import (
+    mark_batch_failed,
+    mark_batch_loaded,
+)
 from deng_ingestion.steps.export.export_bronze_sql import (
     build_copy_sql,
     build_insert_from_temp_sql,
@@ -39,14 +43,6 @@ class LoadExportEventsToBronzeStep:
         invalid_numeric_summary_sql = build_invalid_numeric_summary_sql(temp_table_name)
         insert_sql = build_insert_from_temp_sql(temp_table_name)
 
-        update_sql = """
-        UPDATE pipeline_batches
-        SET
-            status = 'loaded',
-            loaded_at = NOW()
-        WHERE batch_id = %(batch_id)s
-        """
-
         conn, owns_connection = get_context_connection(context)
 
         try:
@@ -76,12 +72,24 @@ class LoadExportEventsToBronzeStep:
                 cursor.execute(insert_sql, {"batch_id": batch["batch_id"]})
                 inserted_rows = cursor.rowcount
 
-                cursor.execute(update_sql, {"batch_id": batch["batch_id"]})
-
+            mark_batch_loaded(conn, batch["batch_id"])
             conn.commit()
-        except Exception:
+
+        except Exception as exc:
             conn.rollback()
+
+            try:
+                mark_batch_failed(conn, batch["batch_id"], exc)
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                logger.exception(
+                    "Failed to persist failed batch state: batch_id={}",
+                    batch["batch_id"],
+                )
+
             raise
+
         finally:
             if owns_connection:
                 conn.close()

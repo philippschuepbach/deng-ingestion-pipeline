@@ -8,6 +8,10 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.steps.export.batch_status import (
+    mark_batch_downloaded,
+    mark_batch_failed,
+)
 
 
 @dataclass(frozen=True)
@@ -24,43 +28,56 @@ class DownloadExportArchiveStep:
         archives_dir.mkdir(parents=True, exist_ok=True)
 
         archive_path = archives_dir / batch["file_name"]
-
-        if not archive_path.exists():
-            logger.info(
-                "Downloading export archive: batch_id={}, url={}",
-                batch["batch_id"],
-                batch["source_url"],
-            )
-
-            with (
-                urlopen(batch["source_url"]) as response,
-                archive_path.open("wb") as target,
-            ):
-                target.write(response.read())
-        else:
-            logger.debug(
-                "Archive already exists locally, reusing file: batch_id={}, path={}",
-                batch["batch_id"],
-                archive_path,
-            )
-
-        update_sql = """
-        UPDATE pipeline_batches
-        SET
-            status = 'downloaded',
-            downloaded_at = COALESCE(downloaded_at, NOW())
-        WHERE batch_id = %(batch_id)s
-        """
+        temp_archive_path = archive_path.with_suffix(archive_path.suffix + ".part")
 
         conn, owns_connection = get_context_connection(context)
 
         try:
-            with conn.cursor() as cursor:
-                cursor.execute(update_sql, {"batch_id": batch["batch_id"]})
+            if not archive_path.exists():
+                logger.info(
+                    "Downloading export archive: batch_id={}, url={}",
+                    batch["batch_id"],
+                    batch["source_url"],
+                )
+
+                if temp_archive_path.exists():
+                    temp_archive_path.unlink()
+
+                with (
+                    urlopen(batch["source_url"]) as response,
+                    temp_archive_path.open("wb") as target,
+                ):
+                    target.write(response.read())
+
+                temp_archive_path.replace(archive_path)
+            else:
+                logger.debug(
+                    "Archive already exists locally, reusing file: batch_id={}, path={}",
+                    batch["batch_id"],
+                    archive_path,
+                )
+
+            mark_batch_downloaded(conn, batch["batch_id"])
             conn.commit()
-        except Exception:
+
+        except Exception as exc:
             conn.rollback()
+
+            if temp_archive_path.exists():
+                temp_archive_path.unlink()
+
+            try:
+                mark_batch_failed(conn, batch["batch_id"], exc)
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                logger.exception(
+                    "Failed to persist failed batch state: batch_id={}",
+                    batch["batch_id"],
+                )
+
             raise
+
         finally:
             if owns_connection:
                 conn.close()
