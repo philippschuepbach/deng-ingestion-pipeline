@@ -7,6 +7,8 @@ from loguru import logger
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.pipeline.context import PipelineContext
 
+CLAIM_TTL_MINUTES = 30
+
 
 @dataclass(frozen=True)
 class SelectRegisteredSilverBatchStep:
@@ -26,18 +28,18 @@ class SelectRegisteredSilverBatchStep:
             return
 
         sql = """
-        SELECT
-            pb.batch_id,
-            pb.source_type,
-            pb.file_type,
-            pb.source_url,
-            pb.file_name,
-            pb.gdelt_timestamp,
-            pb.status
-        FROM pipeline_batches pb
+        UPDATE pipeline_batches pb
+        SET
+            claimed_at = NOW(),
+            claimed_by = %(claimed_by)s,
+            error_message = NULL
         WHERE pb.batch_id = %(batch_id)s
           AND pb.file_type = 'export'
           AND pb.status = 'loaded'
+          AND (
+              pb.claimed_at IS NULL
+              OR pb.claimed_at < NOW() - (%(claim_ttl_minutes)s * INTERVAL '1 minute')
+          )
           AND EXISTS (
               SELECT 1
               FROM events_bronze eb
@@ -48,6 +50,16 @@ class SelectRegisteredSilverBatchStep:
               FROM events_silver es
               WHERE es.batch_id = pb.batch_id
           )
+        RETURNING
+            pb.batch_id,
+            pb.source_type,
+            pb.file_type,
+            pb.source_url,
+            pb.file_name,
+            pb.gdelt_timestamp,
+            pb.status,
+            pb.claimed_at,
+            pb.claimed_by
         """
 
         conn, owns_connection = get_context_connection(context)
@@ -57,12 +69,21 @@ class SelectRegisteredSilverBatchStep:
                 batch_id = remaining_batch_ids.pop(0)
 
                 with conn.cursor() as cursor:
-                    cursor.execute(sql, {"batch_id": batch_id})
+                    cursor.execute(
+                        sql,
+                        {
+                            "batch_id": batch_id,
+                            "claimed_by": context.run_id,
+                            "claim_ttl_minutes": CLAIM_TTL_MINUTES,
+                        },
+                    )
                     row = cursor.fetchone()
+
+                conn.commit()
 
                 if row is None:
                     logger.info(
-                        "Skipping registered silver batch because it is not transformable: batch_id={}",
+                        "Skipping registered silver batch because it is not claimable: batch_id={}",
                         batch_id,
                     )
                     continue
@@ -75,17 +96,25 @@ class SelectRegisteredSilverBatchStep:
                     "file_name": row[4],
                     "gdelt_timestamp": row[5],
                     "status": row[6],
+                    "claimed_at": row[7],
+                    "claimed_by": row[8],
                 }
 
                 logger.info(
-                    "Selected registered silver batch: batch_id={}, file_name={}, status={}",
+                    "Claimed registered silver batch: batch_id={}, file_name={}, status={}, claimed_by={}",
                     batch["batch_id"],
                     batch["file_name"],
                     batch["status"],
+                    batch["claimed_by"],
                 )
 
                 context.data["current_silver_batch"] = batch
                 return
+
+        except Exception:
+            conn.rollback()
+            raise
+
         finally:
             if owns_connection:
                 conn.close()

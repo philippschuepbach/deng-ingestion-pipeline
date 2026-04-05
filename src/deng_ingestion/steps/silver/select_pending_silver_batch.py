@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
+from deng_ingestion.db.pipeline_batches import CLAIM_TTL_MINUTES
 from deng_ingestion.pipeline.context import PipelineContext
 
 
@@ -14,37 +15,64 @@ class SelectPendingSilverBatchStep:
 
     def run(self, context: PipelineContext) -> None:
         sql = """
-        SELECT
+        WITH candidate AS (
+            SELECT pb.batch_id
+            FROM pipeline_batches pb
+            WHERE pb.file_type = 'export'
+              AND pb.status = 'loaded'
+              AND (
+                  pb.claimed_at IS NULL
+                  OR pb.claimed_at < NOW() - (%(claim_ttl_minutes)s * INTERVAL '1 minute')
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM events_bronze eb
+                  WHERE eb.batch_id = pb.batch_id
+              )
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM events_silver es
+                  WHERE es.batch_id = pb.batch_id
+              )
+            ORDER BY pb.gdelt_timestamp ASC
+            FOR UPDATE SKIP LOCKED
+            LIMIT 1
+        )
+        UPDATE pipeline_batches pb
+        SET
+            claimed_at = NOW(),
+            claimed_by = %(claimed_by)s,
+            error_message = NULL
+        FROM candidate
+        WHERE pb.batch_id = candidate.batch_id
+        RETURNING
             pb.batch_id,
             pb.source_type,
             pb.file_type,
             pb.source_url,
             pb.file_name,
             pb.gdelt_timestamp,
-            pb.status
-        FROM pipeline_batches pb
-        WHERE pb.file_type = 'export'
-          AND pb.status = 'loaded'
-          AND EXISTS (
-              SELECT 1
-              FROM events_bronze eb
-              WHERE eb.batch_id = pb.batch_id
-          )
-          AND NOT EXISTS (
-              SELECT 1
-              FROM events_silver es
-              WHERE es.batch_id = pb.batch_id
-          )
-        ORDER BY pb.gdelt_timestamp ASC
-        LIMIT 1
+            pb.status,
+            pb.claimed_at,
+            pb.claimed_by
         """
 
         conn, owns_connection = get_context_connection(context)
 
         try:
             with conn.cursor() as cursor:
-                cursor.execute(sql)
+                cursor.execute(
+                    sql,
+                    {
+                        "claimed_by": context.run_id,
+                        "claim_ttl_minutes": CLAIM_TTL_MINUTES,
+                    },
+                )
                 row = cursor.fetchone()
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
         finally:
             if owns_connection:
                 conn.close()
@@ -62,13 +90,16 @@ class SelectPendingSilverBatchStep:
             "file_name": row[4],
             "gdelt_timestamp": row[5],
             "status": row[6],
+            "claimed_at": row[7],
+            "claimed_by": row[8],
         }
 
         logger.info(
-            "Selected pending silver batch: batch_id={}, file_name={}, status={}",
+            "Claimed pending silver batch: batch_id={}, file_name={}, status={}, claimed_by={}",
             batch["batch_id"],
             batch["file_name"],
             batch["status"],
+            batch["claimed_by"],
         )
 
         context.data["current_silver_batch"] = batch

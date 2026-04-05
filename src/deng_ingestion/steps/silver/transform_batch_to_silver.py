@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
+from deng_ingestion.db.pipeline_batches import (
+    clear_batch_claim,
+    mark_batch_failed,
+)
 from deng_ingestion.pipeline.context import PipelineContext
 
 
@@ -99,10 +103,25 @@ class TransformBatchToSilverStep:
             with conn.cursor() as cursor:
                 cursor.execute(sql, {"batch_id": batch["batch_id"]})
                 inserted_rows = cursor.rowcount
+
+            clear_batch_claim(conn, batch["batch_id"])
             conn.commit()
-        except Exception:
+
+        except Exception as exc:
             conn.rollback()
+
+            try:
+                mark_batch_failed(conn, batch["batch_id"], exc)
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                logger.exception(
+                    "Failed to persist failed batch state: batch_id={}",
+                    batch["batch_id"],
+                )
+
             raise
+
         finally:
             if owns_connection:
                 conn.close()

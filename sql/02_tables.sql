@@ -13,6 +13,8 @@ CREATE TABLE pipeline_batches (
     discovered_at TIMESTAMP NOT NULL DEFAULT NOW(),
     downloaded_at TIMESTAMP,
     loaded_at TIMESTAMP,
+    claimed_at TIMESTAMPTZ,
+    claimed_by TEXT,
     status pipeline_batch_status NOT NULL DEFAULT 'discovered',
     error_message TEXT
 );
@@ -228,3 +230,27 @@ CREATE TABLE risk_alerts_gold (
     UNIQUE (time_window_start, time_window_end, country_code),
     CHECK (time_window_end > time_window_start)
 );
+
+-- Supports claim-based selection of export batches for download/load steps.
+CREATE INDEX idx_pipeline_batches_export_claim
+    ON pipeline_batches (file_type, status, claimed_at, gdelt_timestamp);
+
+-- Supports claim-based selection of already loaded batches for silver transformation.
+CREATE INDEX idx_pipeline_batches_loaded_claim
+    ON pipeline_batches (status, claimed_at, gdelt_timestamp);
+
+-- Supports EXISTS checks on bronze batch presence.
+CREATE INDEX idx_events_bronze_batch_id
+    ON events_bronze (batch_id);
+
+-- Supports NOT EXISTS / lookup checks for already transformed silver batches.
+CREATE INDEX idx_events_silver_batch_id
+    ON events_silver (batch_id);
+
+-- Supports common gold queries by latest window and country.
+CREATE INDEX idx_risk_alerts_gold_window_country
+    ON risk_alerts_gold (time_window_start, country_code);
+
+-- Supports descending "latest window first" style monitoring queries.
+CREATE INDEX idx_risk_alerts_gold_window_score
+    ON risk_alerts_gold (time_window_start DESC, weighted_instability_score DESC);

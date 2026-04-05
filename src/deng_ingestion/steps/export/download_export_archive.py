@@ -7,11 +7,11 @@ from urllib.request import urlopen
 from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
-from deng_ingestion.pipeline.context import PipelineContext
-from deng_ingestion.steps.export.batch_status import (
+from deng_ingestion.db.pipeline_batches import (
     mark_batch_downloaded,
     mark_batch_failed,
 )
+from deng_ingestion.pipeline.context import PipelineContext
 
 
 @dataclass(frozen=True)

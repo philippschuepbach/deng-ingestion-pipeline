@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from psycopg2.extensions import connection as PgConnection
 
+CLAIM_TTL_MINUTES = 30
+
 
 def truncate_error_message(message: str, max_length: int = 1000) -> str:
     if len(message) <= max_length:
@@ -16,7 +18,7 @@ def mark_batch_downloaded(conn: PgConnection, batch_id: int) -> None:
             UPDATE pipeline_batches
             SET
                 status = 'downloaded',
-                downloaded_at = NOW(),
+                downloaded_at = COALESCE(downloaded_at, NOW()),
                 error_message = NULL
             WHERE batch_id = %(batch_id)s
             """,
@@ -32,6 +34,23 @@ def mark_batch_loaded(conn: PgConnection, batch_id: int) -> None:
             SET
                 status = 'loaded',
                 loaded_at = NOW(),
+                claimed_at = NULL,
+                claimed_by = NULL,
+                error_message = NULL
+            WHERE batch_id = %(batch_id)s
+            """,
+            {"batch_id": batch_id},
+        )
+
+
+def clear_batch_claim(conn: PgConnection, batch_id: int) -> None:
+    with conn.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE pipeline_batches
+            SET
+                claimed_at = NULL,
+                claimed_by = NULL,
                 error_message = NULL
             WHERE batch_id = %(batch_id)s
             """,
@@ -56,6 +75,8 @@ def mark_batch_failed(
             UPDATE pipeline_batches
             SET
                 status = 'failed',
+                claimed_at = NULL,
+                claimed_by = NULL,
                 error_message = %(error_message)s
             WHERE batch_id = %(batch_id)s
             """,
