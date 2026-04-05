@@ -5,7 +5,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from deng_ingestion.bronze.export_columns import (
+from deng_ingestion.steps.export.export_bronze_sql import (
     build_copy_sql,
     build_insert_from_temp_sql,
     build_invalid_numeric_summary_sql,

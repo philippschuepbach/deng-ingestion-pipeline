@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from deng_ingestion.cli.handlers import dispatch
 from deng_ingestion.cli.parser import build_parser
-from deng_ingestion.logging_config import configure_logging
+from deng_ingestion.core.logging import configure_logging
 
 
 def main() -> None:

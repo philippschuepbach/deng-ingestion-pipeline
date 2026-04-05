@@ -6,12 +6,10 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_connection
 from deng_ingestion.pipeline.context import PipelineContext
-from deng_ingestion.steps.export import (
-    DownloadExportArchiveStep,
-    ExtractExportCsvStep,
-    LoadExportEventsToBronzeStep,
-    SelectPendingExportBatchStep,
-)
+from .download_export_archive import DownloadExportArchiveStep
+from .extract_export_csv import ExtractExportCsvStep
+from .load_export_events_to_bronze import LoadExportEventsToBronzeStep
+from .select_pending_export_batch import SelectPendingExportBatchStep
 
 
 @dataclass(frozen=True)

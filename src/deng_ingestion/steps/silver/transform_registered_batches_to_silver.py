@@ -6,10 +6,8 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_connection
 from deng_ingestion.pipeline.context import PipelineContext
-from deng_ingestion.steps.silver import (
-    SelectRegisteredSilverBatchStep,
-    TransformBatchToSilverStep,
-)
+from .select_registered_silver_batch import SelectRegisteredSilverBatchStep
+from .transform_batch_to_silver import TransformBatchToSilverStep
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-PACKAGE_ROOT = Path(__file__).resolve().parent
+CORE_ROOT = Path(__file__).resolve().parent
+PACKAGE_ROOT = CORE_ROOT.parent
 SRC_ROOT = PACKAGE_ROOT.parent
 PROJECT_ROOT = SRC_ROOT.parent
 

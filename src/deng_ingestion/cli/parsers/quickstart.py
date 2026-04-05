@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from argparse import _SubParsersAction
 
-from deng_ingestion.cli.parser_common import add_relative_time_args
+from deng_ingestion.cli.parsers.common import add_relative_time_args
 
 
 def add_quickstart_parser(subparsers: _SubParsersAction) -> None:
