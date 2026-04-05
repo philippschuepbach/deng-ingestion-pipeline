@@ -8,6 +8,7 @@ from loguru import logger
 from deng_ingestion.bronze.export_columns import (
     build_copy_sql,
     build_insert_from_temp_sql,
+    build_invalid_numeric_summary_sql,
     build_temp_import_table_sql,
 )
 from deng_ingestion.db.connection import get_context_connection
@@ -35,6 +36,7 @@ class LoadExportEventsToBronzeStep:
 
         create_temp_sql = build_temp_import_table_sql(temp_table_name)
         copy_sql = build_copy_sql(temp_table_name)
+        invalid_numeric_summary_sql = build_invalid_numeric_summary_sql(temp_table_name)
         insert_sql = build_insert_from_temp_sql(temp_table_name)
 
         update_sql = """
@@ -53,6 +55,23 @@ class LoadExportEventsToBronzeStep:
 
                 with csv_path.open("r", encoding="utf-8", errors="replace") as handle:
                     cursor.copy_expert(copy_sql, handle)
+
+                cursor.execute(invalid_numeric_summary_sql)
+                invalid_numeric_rows = cursor.fetchall()
+
+                if invalid_numeric_rows:
+                    for (
+                        column_name,
+                        invalid_count,
+                        sample_value,
+                    ) in invalid_numeric_rows:
+                        logger.warning(
+                            "Invalid numeric values detected during bronze load: batch_id={}, column_name={}, invalid_count={}, sample_value={!r}. Values were coerced to NULL.",
+                            batch["batch_id"],
+                            column_name,
+                            invalid_count,
+                            sample_value,
+                        )
 
                 cursor.execute(insert_sql, {"batch_id": batch["batch_id"]})
                 inserted_rows = cursor.rowcount
