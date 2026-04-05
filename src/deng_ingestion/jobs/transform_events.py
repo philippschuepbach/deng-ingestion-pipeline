@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from deng_ingestion.pipeline.job import PipelineJob
-from deng_ingestion.steps.select_pending_silver_batch import (
+from deng_ingestion.steps.silver.select_pending_silver_batch import (
     SelectPendingSilverBatchStep,
 )
-from deng_ingestion.steps.transform_all_pending_batches_to_silver import (
+from deng_ingestion.steps.silver.transform_all_pending_batches_to_silver import (
     TransformAllPendingBatchesToSilverStep,
 )
-from deng_ingestion.steps.transform_batch_to_silver import TransformBatchToSilverStep
-from deng_ingestion.steps.transform_registered_batches_to_silver import (
+from deng_ingestion.steps.silver.transform_batch_to_silver import (
+    TransformBatchToSilverStep,
+)
+from deng_ingestion.steps.silver.transform_registered_batches_to_silver import (
     TransformRegisteredBatchesToSilverStep,
 )
 
