@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from urllib.request import urlopen
 
+from loguru import logger
+
+from deng_ingestion.core.http import fetch_text
 from deng_ingestion.pipeline.context import PipelineContext
 
 
@@ -13,8 +15,23 @@ class FetchManifestStep:
     source_type: str
 
     def run(self, context: PipelineContext) -> None:
-        with urlopen(self.manifest_url) as response:
-            manifest_text = response.read().decode("utf-8")
+        logger.info(
+            "Fetching manifest: source_type={}, url={}",
+            self.source_type,
+            self.manifest_url,
+        )
+
+        manifest_text = fetch_text(
+            self.manifest_url,
+            timeout_seconds=15.0,
+            retries=3,
+        )
 
         context.data["manifest_text"] = manifest_text
         context.data["manifest_source_type"] = self.source_type
+
+        logger.info(
+            "Fetched manifest successfully: source_type={}, bytes={}",
+            self.source_type,
+            len(manifest_text.encode("utf-8")),
+        )

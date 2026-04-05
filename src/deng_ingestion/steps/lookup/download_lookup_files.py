@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.request import urlopen
 
 from loguru import logger
 
+from deng_ingestion.core.http import download_binary_to_file
 from deng_ingestion.lookups.config import (
     GDELT_LOOKUP_FILES,
     GDELT_LOOKUPS_BASE_URL,
@@ -35,21 +35,16 @@ class DownloadLookupFilesStep:
                 continue
 
             source_url = f"{GDELT_LOOKUPS_BASE_URL}{file_name}"
-            temp_path = target_path.with_suffix(target_path.suffix + ".part")
 
             logger.info("Downloading lookup file: {} -> {}", source_url, target_path)
 
-            try:
-                with urlopen(source_url) as response, temp_path.open("wb") as target:
-                    target.write(response.read())
-
-                temp_path.replace(target_path)
-                downloaded_files.append(file_name)
-
-            except Exception:
-                if temp_path.exists():
-                    temp_path.unlink()
-                raise
+            download_binary_to_file(
+                source_url,
+                target_path,
+                timeout_seconds=15.0,
+                retries=3,
+            )
+            downloaded_files.append(file_name)
 
         context.data["lookup_dir"] = lookup_dir
         context.data["downloaded_lookup_files"] = downloaded_files

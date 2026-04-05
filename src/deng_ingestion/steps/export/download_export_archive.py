@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.request import urlopen
 
 from loguru import logger
 
+from deng_ingestion.core.http import download_binary_to_file
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.db.pipeline_batches import (
     mark_batch_downloaded,
@@ -28,7 +28,6 @@ class DownloadExportArchiveStep:
         archives_dir.mkdir(parents=True, exist_ok=True)
 
         archive_path = archives_dir / batch["file_name"]
-        temp_archive_path = archive_path.with_suffix(archive_path.suffix + ".part")
 
         conn, owns_connection = get_context_connection(context)
 
@@ -40,16 +39,12 @@ class DownloadExportArchiveStep:
                     batch["source_url"],
                 )
 
-                if temp_archive_path.exists():
-                    temp_archive_path.unlink()
-
-                with (
-                    urlopen(batch["source_url"]) as response,
-                    temp_archive_path.open("wb") as target,
-                ):
-                    target.write(response.read())
-
-                temp_archive_path.replace(archive_path)
+                download_binary_to_file(
+                    batch["source_url"],
+                    archive_path,
+                    timeout_seconds=30.0,
+                    retries=3,
+                )
             else:
                 logger.debug(
                     "Archive already exists locally, reusing file: batch_id={}, path={}",
@@ -62,9 +57,6 @@ class DownloadExportArchiveStep:
 
         except Exception as exc:
             conn.rollback()
-
-            if temp_archive_path.exists():
-                temp_archive_path.unlink()
 
             try:
                 mark_batch_failed(conn, batch["batch_id"], exc)
