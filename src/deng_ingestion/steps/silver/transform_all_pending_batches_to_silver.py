@@ -34,8 +34,7 @@ class TransformAllPendingBatchesToSilverStep:
 
         try:
             while True:
-                clear_current_silver_batch(context)
-                clear_last_silver_inserted_rows(context)
+                _clear_iteration_state(context)
 
                 select_step.run(context)
 
@@ -43,13 +42,16 @@ class TransformAllPendingBatchesToSilverStep:
                 if current_batch is None:
                     break
 
-                transform_step.run(context)
+                _transform_selected_batch(
+                    context=context,
+                    transform_step=transform_step,
+                )
 
                 processed_batches += 1
                 logger.info(
                     (
-                        "Processed pending silver batch:"
-                        " batch_id={}, file_name={}, inserted_rows={}"
+                        "Processed pending silver batch: "
+                        "batch_id={}, file_name={}, inserted_rows={}"
                     ),
                     current_batch["batch_id"],
                     current_batch["file_name"],
@@ -65,3 +67,16 @@ class TransformAllPendingBatchesToSilverStep:
             "Finished transform-all silver step: processed_batches={}",
             processed_batches,
         )
+
+
+def _clear_iteration_state(context: PipelineContext) -> None:
+    clear_current_silver_batch(context)
+    clear_last_silver_inserted_rows(context)
+
+
+def _transform_selected_batch(
+    *,
+    context: PipelineContext,
+    transform_step: TransformBatchToSilverStep,
+) -> None:
+    transform_step.run(context)
