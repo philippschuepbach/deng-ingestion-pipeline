@@ -51,6 +51,16 @@ docker compose down -v
 docker compose up -d pgdatabase pgadmin
 ```
 
+## Python Environment Setup
+
+Install the project dependencies once from the repository root:
+
+```bash
+uv sync
+```
+
+After that, CLI commands can be run directly with uv run.
+
 ## Running the Pipeline Locally with uv
 
 All CLI commands can be run directly from the project root.
