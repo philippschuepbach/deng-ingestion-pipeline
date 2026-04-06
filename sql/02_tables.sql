@@ -254,3 +254,15 @@ CREATE INDEX idx_risk_alerts_gold_window_country
 -- Supports descending "latest window first" style monitoring queries.
 CREATE INDEX idx_risk_alerts_gold_window_score
     ON risk_alerts_gold (time_window_start DESC, weighted_instability_score DESC);
+
+-- Used by the export-ingest selector query:
+-- find the oldest pending export batch without sorting the whole table.
+CREATE INDEX IF NOT EXISTS idx_pipeline_batches_export_pending_ts
+ON pipeline_batches (gdelt_timestamp)
+WHERE file_type = 'export'
+  AND status IN ('discovered', 'downloaded');
+
+CREATE INDEX IF NOT EXISTS idx_pipeline_batches_export_loaded_ts
+ON pipeline_batches (gdelt_timestamp)
+WHERE file_type = 'export'
+  AND status = 'loaded';
