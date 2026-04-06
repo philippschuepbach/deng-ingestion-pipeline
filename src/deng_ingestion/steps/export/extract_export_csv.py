@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from shutil import copyfileobj
 from zipfile import ZipFile
 
 from loguru import logger
@@ -47,17 +48,20 @@ class ExtractExportCsvStep:
                 raise ValueError(message)
 
             member_name = members[0]
+            safe_extracted_path = safe_member_path(raw_dir, member_name)
             extracted_path = raw_dir / Path(member_name).name
 
             if not extracted_path.exists():
-                zip_file.extract(member_name, raw_dir)
-                extracted_nested_path = raw_dir / member_name
+                safe_extracted_path.parent.mkdir(parents=True, exist_ok=True)
 
-                if (
-                    extracted_nested_path != extracted_path
-                    and extracted_nested_path.exists()
+                with (
+                    zip_file.open(member_name, "r") as source,
+                    safe_extracted_path.open("wb") as target,
                 ):
-                    extracted_nested_path.rename(extracted_path)
+                    copyfileobj(source, target)
+
+                if safe_extracted_path != extracted_path:
+                    safe_extracted_path.rename(extracted_path)
             else:
                 logger.info(
                     "Extracted CSV already exists locally, reusing file: {}",
@@ -65,3 +69,20 @@ class ExtractExportCsvStep:
                 )
 
         set_extracted_csv_path(context, extracted_path)
+
+
+def safe_member_path(base_dir: Path, member_name: str) -> Path:
+    """Prevent Zip Slip by ensuring the ZIP member cannot escape base_dir."""
+    normalized_name = member_name.replace("\\", "/")
+    parts = Path(normalized_name).parts
+
+    if normalized_name.startswith("/") or ".." in parts:
+        raise ValueError(f"Unsafe ZIP member path: {member_name}")
+
+    destination = (base_dir / normalized_name).resolve()
+    base = base_dir.resolve()
+
+    if base not in destination.parents and destination != base:
+        raise ValueError(f"Unsafe ZIP extraction target: {destination}")
+
+    return destination
