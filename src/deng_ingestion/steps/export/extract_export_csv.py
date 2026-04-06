@@ -40,9 +40,11 @@ class ExtractExportCsvStep:
         with ZipFile(archive_path, "r") as zip_file:
             members = zip_file.namelist()
             if len(members) != 1:
-                raise ValueError(
-                    f"Expected exactly one file in archive {archive_path}, found {len(members)}"
+                message = (
+                    f"Expected exactly one file in archive {archive_path}, "
+                    f"found {len(members)}"
                 )
+                raise ValueError(message)
 
             member_name = members[0]
             extracted_path = raw_dir / Path(member_name).name

@@ -107,7 +107,8 @@ def _safe_decimal_expr(column_name: str) -> str:
     return f"""
     CASE
         WHEN NULLIF(BTRIM({column_name}), '') IS NULL THEN NULL
-        WHEN BTRIM({column_name}) ~ '^-?(\\d+(\\.\\d+)?|\\.\\d+)$' THEN BTRIM({column_name})::DOUBLE PRECISION
+        WHEN BTRIM({column_name}) ~ '^-?(\\d+(\\.\\d+)?|\\.\\d+)$'
+            THEN BTRIM({column_name})::DOUBLE PRECISION
         ELSE NULL
     END
     """.strip()

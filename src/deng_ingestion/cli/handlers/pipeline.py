@@ -24,7 +24,13 @@ def handle_pipeline_incremental(args: Namespace) -> None:
     job.run(context)
 
     logger.info(
-        "Finished pipeline incremental: registered_export_batch_ids={}, ingested_export_batch_ids={}, transformed_export_batch_ids={}, gold_row_count={}",
+        (
+            "Finished pipeline incremental: "
+            "registered_export_batch_ids={}, "
+            "ingested_export_batch_ids={}, "
+            "transformed_export_batch_ids={}, "
+            "gold_row_count={}"
+        ),
         get_registered_export_batch_ids(context),
         get_ingested_export_batch_ids(context),
         get_transformed_export_batch_ids(context),

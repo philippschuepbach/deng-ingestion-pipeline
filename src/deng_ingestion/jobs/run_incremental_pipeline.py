@@ -4,11 +4,12 @@ from dataclasses import dataclass
 
 from loguru import logger
 
+from deng_ingestion.pipeline.context import PipelineContext
+
 from .build_risk_alerts_gold import build_risk_alerts_gold_job
 from .ingest_export_events import build_ingest_registered_export_events_job
 from .ingest_manifest import build_incremental_manifest_job
 from .transform_events import build_transform_registered_events_job
-from deng_ingestion.pipeline.context import PipelineContext
 
 
 @dataclass(frozen=True)

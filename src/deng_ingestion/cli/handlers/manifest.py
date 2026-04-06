@@ -32,8 +32,7 @@ def handle_manifest_backfill(args: Namespace) -> None:
 
     if years == 0 and months == 0 and days == 0:
         raise ValueError(
-            "Backfill requires a non-zero relative time window, "
-            "for example: --months 6"
+            "Backfill requires a non-zero relative time window, for example: --months 6"
         )
 
     now = datetime.now(UTC)
@@ -45,7 +44,10 @@ def handle_manifest_backfill(args: Namespace) -> None:
     date_to = now
 
     logger.info(
-        "Starting manifest backfill ingestion: years={}, months={}, days={}, date_from={}, date_to={}",
+        (
+            "Starting manifest backfill ingestion: "
+            "years={}, months={}, days={}, date_from={}, date_to={}"
+        ),
         years,
         months,
         days,

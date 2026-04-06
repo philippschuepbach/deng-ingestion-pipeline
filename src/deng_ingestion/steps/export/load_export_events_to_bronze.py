@@ -68,7 +68,11 @@ class LoadExportEventsToBronzeStep:
                         sample_value,
                     ) in invalid_numeric_rows:
                         logger.warning(
-                            "Invalid numeric values detected during bronze load: batch_id={}, column_name={}, invalid_count={}, sample_value={!r}. Values were coerced to NULL.",
+                            (
+                                "Found invalid numeric value in column '{}': "
+                                "batch_id={}, column_name={}, "
+                                "invalid_count={}, sample_value={}"
+                            ),
                             batch["batch_id"],
                             column_name,
                             invalid_count,

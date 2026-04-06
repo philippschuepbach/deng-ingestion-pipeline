@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
+from deng_ingestion.db.sql_loader import load_sql
 from deng_ingestion.pipeline.context import PipelineContext
 from deng_ingestion.pipeline.context_access import (
     set_seeded_risk_category_mapping_count,
@@ -73,26 +74,9 @@ class SeedRiskCategoryMappingStep:
 
         try:
             with conn.cursor() as cursor:
+                insert_sql = load_sql("lookup", "seed_risk_category_mapping.sql")
                 cursor.executemany(
-                    """
-                    INSERT INTO dim_risk_category_mapping (
-                        event_root_code,
-                        is_protest_related,
-                        is_conflict_related,
-                        is_diplomatic_tension_related
-                    )
-                    VALUES (
-                        %(event_root_code)s,
-                        %(is_protest_related)s,
-                        %(is_conflict_related)s,
-                        %(is_diplomatic_tension_related)s
-                    )
-                    ON CONFLICT (event_root_code) DO UPDATE
-                    SET
-                        is_protest_related = EXCLUDED.is_protest_related,
-                        is_conflict_related = EXCLUDED.is_conflict_related,
-                        is_diplomatic_tension_related = EXCLUDED.is_diplomatic_tension_related
-                    """,
+                    insert_sql,
                     RISK_CATEGORY_MAPPING_ROWS,
                 )
 

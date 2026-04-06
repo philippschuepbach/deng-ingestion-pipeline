@@ -15,5 +15,8 @@ def add_pipeline_parser(subparsers: _SubParsersAction) -> None:
 
     pipeline_subparsers.add_parser(
         "incremental",
-        help="Run manifest incremental, export ingest-current-run, silver transform-current-run, and gold build in a single pipeline context",
+        help=(
+            "Run manifest incremental, export ingest-current-run, "
+            "silver transform-current-run, and gold build in a single pipeline context"
+        ),
     )

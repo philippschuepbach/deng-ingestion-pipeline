@@ -20,10 +20,16 @@ def add_export_parser(subparsers: _SubParsersAction) -> None:
 
     export_subparsers.add_parser(
         "ingest-all",
-        help="Download, extract, and load all currently pending export batches into bronze",
+        help=(
+            "Download, extract, "
+            "and load all currently pending export batches into bronze"
+        ),
     )
 
     export_subparsers.add_parser(
         "ingest-current-run",
-        help="Internal/debug command: load export batches registered in the current pipeline context",
+        help=(
+            "Internal/debug command: "
+            "load export batches registered in the current pipeline context"
+        ),
     )

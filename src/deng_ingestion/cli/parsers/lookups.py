@@ -15,5 +15,8 @@ def add_lookups_parser(subparsers: _SubParsersAction) -> None:
 
     lookups_subparsers.add_parser(
         "load",
-        help="Download lookup files if needed, load dimension tables, and seed risk category mapping",
+        help=(
+            "Download lookup files if needed, "
+            "load dimension tables, and seed risk category mapping"
+        ),
     )

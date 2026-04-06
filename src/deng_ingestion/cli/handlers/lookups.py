@@ -27,7 +27,10 @@ def handle_lookups_load(args: Namespace) -> None:
     )
 
     logger.info(
-        "Finished lookup load: loaded_lookup_counts={}, seeded_risk_category_mapping_count={}",
+        (
+            "Finished lookup load: "
+            "loaded_lookup_counts={}, seeded_risk_category_mapping_count={}"
+        ),
         loaded_lookup_counts,
         seeded_risk_category_mapping_count,
     )

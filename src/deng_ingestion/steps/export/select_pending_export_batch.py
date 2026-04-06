@@ -88,7 +88,10 @@ class SelectPendingExportBatchStep:
         }
 
         logger.info(
-            "Claimed pending export batch: batch_id={}, file_name={}, status={}, claimed_by={}",
+            (
+                "Claimed pending export batch:"
+                " batch_id={}, file_name={}, status={}, claimed_by={}"
+            ),
             batch["batch_id"],
             batch["file_name"],
             batch["status"],

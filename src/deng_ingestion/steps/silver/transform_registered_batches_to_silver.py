@@ -18,6 +18,7 @@ from deng_ingestion.pipeline.context_access import (
     set_processed_silver_batches,
     set_transformed_export_batch_ids,
 )
+
 from .select_registered_silver_batch import SelectRegisteredSilverBatchStep
 from .transform_batch_to_silver import TransformBatchToSilverStep
 
@@ -53,7 +54,10 @@ class TransformRegisteredBatchesToSilverStep:
                 transformed_export_batch_ids.append(current_batch["batch_id"])
 
                 logger.info(
-                    "Processed registered silver batch {}: batch_id={}, file_name={}, inserted_rows={}",
+                    (
+                        "Processed registered silver batch {}:"
+                        " batch_id={}, file_name={}, inserted_rows={}"
+                    ),
                     processed_batches,
                     current_batch["batch_id"],
                     current_batch["file_name"],
@@ -68,7 +72,10 @@ class TransformRegisteredBatchesToSilverStep:
         set_transformed_export_batch_ids(context, transformed_export_batch_ids)
 
         logger.info(
-            "Finished transform registered silver step: requested_batches={}, processed_batches={}",
+            (
+                "Finished transform registered silver step:"
+                " requested_batches={}, processed_batches={}"
+            ),
             len(get_ingested_export_batch_ids(context)),
             processed_batches,
         )

@@ -61,7 +61,10 @@ def handle_export_ingest_current_run(args: Namespace) -> None:
     ingested_export_batch_ids = get_ingested_export_batch_ids(context)
 
     logger.info(
-        "Finished export ingest-current-run: processed_batches={}, ingested_export_batch_ids={}",
+        (
+            "Finished export ingest-current-run: "
+            "processed_batches={}, ingested_export_batch_ids={}"
+        ),
         processed_batches,
         ingested_export_batch_ids,
     )

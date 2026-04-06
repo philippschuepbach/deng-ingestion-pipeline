@@ -18,6 +18,7 @@ from deng_ingestion.pipeline.context_access import (
     set_ingested_export_batch_ids,
     set_processed_batches,
 )
+
 from .download_export_archive import DownloadExportArchiveStep
 from .extract_export_csv import ExtractExportCsvStep
 from .load_export_events_to_bronze import LoadExportEventsToBronzeStep
@@ -75,7 +76,10 @@ class IngestRegisteredExportBatchesStep:
         set_ingested_export_batch_ids(context, ingested_export_batch_ids)
 
         logger.info(
-            "Finished ingest registered export batches step: requested_batches={}, processed_batches={}",
+            (
+                "Finished ingest registered export batches step:"
+                " requested_batches={}, processed_batches={}"
+            ),
             len(get_registered_export_batch_ids(context)),
             processed_batches,
         )

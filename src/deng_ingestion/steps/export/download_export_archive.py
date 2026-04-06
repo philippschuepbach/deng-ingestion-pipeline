@@ -50,7 +50,8 @@ class DownloadExportArchiveStep:
                 )
             else:
                 logger.debug(
-                    "Archive already exists locally, reusing file: batch_id={}, path={}",
+                    "Archive already exists locally, reusing file:"
+                    " batch_id={}, path={}",
                     batch["batch_id"],
                     archive_path,
                 )

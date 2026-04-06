@@ -5,11 +5,11 @@ from argparse import Namespace
 from loguru import logger
 
 from .common import has_backfill_window
+from .export import handle_export_ingest_all
 from .gold import handle_gold_build
 from .lookups import handle_lookups_load
 from .manifest import handle_manifest_backfill, handle_manifest_incremental
 from .silver import handle_silver_transform_all
-from .export import handle_export_ingest_all
 
 
 def handle_quickstart(args: Namespace) -> None:

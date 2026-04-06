@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from collections.abc import Sequence
+from dataclasses import dataclass
+
 from loguru import logger
 
 from deng_ingestion.pipeline.context import PipelineContext

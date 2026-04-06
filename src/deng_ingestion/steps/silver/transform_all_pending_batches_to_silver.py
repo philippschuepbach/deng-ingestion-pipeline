@@ -15,6 +15,7 @@ from deng_ingestion.pipeline.context_access import (
     set_db_connection,
     set_processed_silver_batches,
 )
+
 from .select_pending_silver_batch import SelectPendingSilverBatchStep
 from .transform_batch_to_silver import TransformBatchToSilverStep
 
@@ -46,8 +47,10 @@ class TransformAllPendingBatchesToSilverStep:
 
                 processed_batches += 1
                 logger.info(
-                    "Processed silver batch {}: batch_id={}, file_name={}, inserted_rows={}",
-                    processed_batches,
+                    (
+                        "Processed pending silver batch:"
+                        " batch_id={}, file_name={}, inserted_rows={}"
+                    ),
                     current_batch["batch_id"],
                     current_batch["file_name"],
                     get_last_silver_inserted_rows(context) or 0,

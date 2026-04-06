@@ -7,8 +7,8 @@ from deng_ingestion.steps.manifest import (
     FetchManifestStep,
     FilterManifestEntriesStep,
     ParseManifestEntriesStep,
-    RegisterManifestBatchesStep,
     RegisterManifestBatchesForCurrentRunStep,
+    RegisterManifestBatchesStep,
 )
 
 LASTUPDATE_URL = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt"

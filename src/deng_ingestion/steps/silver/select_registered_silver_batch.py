@@ -87,7 +87,11 @@ class SelectRegisteredSilverBatchStep:
 
                 if row is None:
                     logger.info(
-                        "Skipping registered silver batch because it is not claimable: batch_id={}",
+                        (
+                            "Skipping registered silver batch "
+                            "because it is not claimable:"
+                            " batch_id={}"
+                        ),
                         batch_id,
                     )
                     continue
@@ -105,7 +109,10 @@ class SelectRegisteredSilverBatchStep:
                 }
 
                 logger.info(
-                    "Claimed registered silver batch: batch_id={}, file_name={}, status={}, claimed_by={}",
+                    (
+                        "Claimed registered silver batch:"
+                        " batch_id={}, file_name={}, status={}, claimed_by={}"
+                    ),
                     batch["batch_id"],
                     batch["file_name"],
                     batch["status"],

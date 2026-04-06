@@ -160,7 +160,11 @@ class LoadLookupDimensionsStep:
         )
 
         logger.info(
-            "Loaded lookup dimensions: fips_countries={}, cameo_countries={}, known_groups={}, event_roots={}, event_codes={}",
+            (
+                "Loaded lookup dimensions:"
+                " fips_countries={}, cameo_countries={}, "
+                "known_groups={}, event_roots={}, event_codes={}"
+            ),
             len(fips_country_codes),
             len(cameo_country_codes),
             len(cameo_known_groups),

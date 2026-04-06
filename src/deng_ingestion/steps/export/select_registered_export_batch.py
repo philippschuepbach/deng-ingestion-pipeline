@@ -77,7 +77,11 @@ class SelectRegisteredExportBatchStep:
 
                 if row is None:
                     logger.info(
-                        "Skipping registered export batch because it is not claimable: batch_id={}",
+                        (
+                            "Failed to claim registered export batch "
+                            "(may be claimed by another process):"
+                            " batch_id={}"
+                        ),
                         batch_id,
                     )
                     continue
@@ -95,7 +99,10 @@ class SelectRegisteredExportBatchStep:
                 }
 
                 logger.info(
-                    "Claimed registered export batch: batch_id={}, file_name={}, status={}, claimed_by={}",
+                    (
+                        "Claimed registered export batch:"
+                        " batch_id={}, file_name={}, status={}, claimed_by={}"
+                    ),
                     batch["batch_id"],
                     batch["file_name"],
                     batch["status"],
