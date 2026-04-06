@@ -7,7 +7,8 @@ from deng_ingestion.pipeline.context import PipelineContext
 
 
 class PipelineStep(Protocol):
-    name: str
+    @property
+    def name(self) -> str: ...
 
     def run(self, context: PipelineContext) -> None: ...
 

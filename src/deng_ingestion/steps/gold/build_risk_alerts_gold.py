@@ -29,7 +29,13 @@ class BuildRiskAlertsGoldStep:
                 cursor.execute(truncate_sql)
                 cursor.execute(insert_sql)
                 cursor.execute(count_sql)
-                gold_row_count = cursor.fetchone()[0]
+                count_row = cursor.fetchone()
+                if count_row is None:
+                    raise ValueError(
+                        "Expected row count result from risk_alerts_gold count query"
+                    )
+
+                gold_row_count: int = count_row[0]
 
             conn.commit()
         except Exception:

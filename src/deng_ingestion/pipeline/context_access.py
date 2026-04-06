@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import cast
+from psycopg2.extensions import connection as PgConnection
 
 from deng_ingestion.pipeline.context import PipelineContext
 from deng_ingestion.pipeline.context_keys import (
@@ -287,11 +288,14 @@ def set_gold_row_count(context: PipelineContext, value: int) -> None:
     context.data[GOLD_ROW_COUNT] = value
 
 
-def get_db_connection(context: PipelineContext):
-    return context.data.get(DB_CONNECTION)
+def get_db_connection(context: PipelineContext) -> PgConnection | None:
+    value = context.data.get(DB_CONNECTION)
+    if value is None:
+        return None
+    return cast(PgConnection, value)
 
 
-def set_db_connection(context: PipelineContext, value) -> None:
+def set_db_connection(context: PipelineContext, value: PgConnection) -> None:
     context.data[DB_CONNECTION] = value
 
 

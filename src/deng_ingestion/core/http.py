@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import cast
 import socket
 import time
 from pathlib import Path
@@ -34,7 +35,8 @@ def fetch_text(
     for attempt in range(1, retries + 1):
         try:
             with urlopen(url, timeout=timeout_seconds) as response:
-                return response.read().decode(encoding)
+                data = cast(bytes, response.read())
+                return data.decode(encoding)
         except Exception as exc:
             last_exception = exc
 

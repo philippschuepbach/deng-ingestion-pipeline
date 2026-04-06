@@ -69,7 +69,13 @@ class RegisterManifestBatchesForCurrentRunStep:
                         },
                     )
 
-                    batch_id, file_type = cursor.fetchone()
+                    row = cursor.fetchone()
+                    if row is None:
+                        raise ValueError(
+                            "Expected batch_id and file_type after registering manifest batch"
+                        )
+
+                    batch_id, file_type = row
 
                     if file_type == "export":
                         registered_export_batch_ids.append(batch_id)
