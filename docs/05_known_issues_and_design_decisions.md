@@ -98,6 +98,29 @@ The bronze ingestion process was made more defensive:
 
 This keeps the pipeline running while still making the data quality issue visible.
 
+### 6. Large historical backfills are stable but slow in the current local setup
+
+| Kestra | PostgreSQL |
+|---|---|
+| <img src="images/Kestra_Performance_Profile.png" alt="Kestra Performance Profile" height="420"> | <img src="images/pgdatabase_Performance_Profile.png" alt="PostgreSQL Performance Profile" height="420"> |
+
+A large backfill over several months is possible in the current implementation, but it takes a long time in the local Docker-based setup.
+
+The main reason is not a single failing query, but the overall workload:
+- many small GDELT export batches
+- serial download, extraction, and bronze loading
+- sustained database writes during long runs
+
+In an observed long backfill run, the containers remained stable over time without crashing or running into extreme memory pressure. The main limitation was throughput, not correctness or reproducibility.
+
+#### Current handling
+
+For review and local validation, smaller windows such as incremental runs or `days = 2` are recommended.
+
+#### Planned improvement
+
+A practical next step is to add a batch limit or chunked execution mode for large backfills.
+
 ## Key Design Decisions
 
 ### 1. Bronze stays source-aligned
