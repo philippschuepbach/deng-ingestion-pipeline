@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import cast
 import socket
 import time
 from pathlib import Path
 from shutil import copyfileobj
+from typing import cast
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 

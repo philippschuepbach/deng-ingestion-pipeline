@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import cast
+
 from psycopg2.extensions import connection as PgConnection
 
 from deng_ingestion.pipeline.context import PipelineContext

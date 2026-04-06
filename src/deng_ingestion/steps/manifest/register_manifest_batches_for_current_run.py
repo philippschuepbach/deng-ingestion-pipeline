@@ -72,7 +72,8 @@ class RegisterManifestBatchesForCurrentRunStep:
                     row = cursor.fetchone()
                     if row is None:
                         raise ValueError(
-                            "Expected batch_id and file_type after registering manifest batch"
+                            "Expected batch_id and file_type "
+                            "after registering manifest batch"
                         )
 
                     batch_id, file_type = row
