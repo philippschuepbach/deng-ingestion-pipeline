@@ -12,6 +12,9 @@ typecheck:
 test:
 	uv run pytest
 
+coverage:
+	uv run pytest --cov=src/deng_ingestion --cov-report=term-missing --cov-report=html
+
 check: lint typecheck test
 
 fix:
