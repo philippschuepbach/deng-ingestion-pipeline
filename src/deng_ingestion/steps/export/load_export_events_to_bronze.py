@@ -69,14 +69,16 @@ class LoadExportEventsToBronzeStep:
                     ) in invalid_numeric_rows:
                         logger.warning(
                             (
-                                "Found invalid numeric value in column '{}': "
-                                "batch_id={}, column_name={}, "
-                                "invalid_count={}, sample_value={}"
+                                "Invalid numeric values detected during bronze load: "
+                                "batch_id={batch_id}, column_name={column_name}, "
+                                "invalid_count={invalid_count}, "
+                                "sample_value={sample_value!r}. "
+                                "Values were coerced to NULL."
                             ),
-                            batch["batch_id"],
-                            column_name,
-                            invalid_count,
-                            sample_value,
+                            batch_id=batch["batch_id"],
+                            column_name=column_name,
+                            invalid_count=invalid_count,
+                            sample_value=sample_value,
                         )
 
                 cursor.execute(insert_sql, {"batch_id": batch["batch_id"]})
@@ -104,7 +106,7 @@ class LoadExportEventsToBronzeStep:
             if owns_connection:
                 conn.close()
 
-        logger.info(
+        logger.debug(
             "Finished bronze load for batch_id={}, inserted_rows={}",
             batch["batch_id"],
             inserted_rows,
