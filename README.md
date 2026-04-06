@@ -62,6 +62,21 @@ For an incremental run:
 docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart
 ```
 
+## Ingestion Script Entry Point
+
+The main Python CLI entry point for the ingestion pipeline is:
+
+* `src/deng_ingestion/cli/main.py`
+
+It is exposed through the `deng-ingestion` command defined in `pyproject.toml` and is used to start the local ingestion and pipeline workflows.
+
+Examples:
+
+```bash
+docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart
+docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
+```
+
 ## Verification
 
 For a step-by-step reviewer path, service login details, and SQL verification queries, see:

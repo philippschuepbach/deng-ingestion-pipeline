@@ -14,16 +14,13 @@ It focuses on the recommended execution path for the midterm review:
 > [!IMPORTANT]
 > For the midterm review, the recommended execution path is the Kestra manual parent flow `pipeline_run_manual`.
 
-> [!NOTE]
-> If you use a large backfill window, the pipeline may run for a long time. For local verification, it is recommended to run incrementally without inputs or use a small backfill window such as 2 days.
-
 ## 1. Start the local environment
 
 From the repository root, start the required services:
 
 ```bash
 docker compose up -d
-````
+```
 
 This starts the local project environment including:
 
@@ -40,6 +37,9 @@ Open the following services in your browser:
 * **Kestra:** `http://localhost:8080`
 
 ## 3. Run the pipeline in Kestra
+
+> [!NOTE]
+> Expected runtime depends on the selected execution mode. An incremental run should usually finish much faster than a historical backfill. A small backfill such as `days = 2` is suitable for review and local validation, while larger backfill windows may take significantly longer.
 
 Use the Kestra UI to run the manual parent flow:
 
