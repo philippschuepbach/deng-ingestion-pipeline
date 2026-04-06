@@ -36,7 +36,7 @@ class DownloadExportArchiveStep:
 
         try:
             if not archive_path.exists():
-                logger.info(
+                logger.debug(
                     "Downloading export archive: batch_id={}, url={}",
                     batch["batch_id"],
                     batch["source_url"],

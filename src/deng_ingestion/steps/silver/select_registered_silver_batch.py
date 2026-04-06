@@ -27,7 +27,7 @@ class SelectRegisteredSilverBatchStep:
             set_remaining_ingested_export_batch_ids(context, remaining_batch_ids)
 
         if not remaining_batch_ids:
-            logger.info("No registered silver batch found")
+            logger.debug("No registered silver batch found")
             set_current_silver_batch(context, None)
             return
 
@@ -86,7 +86,7 @@ class SelectRegisteredSilverBatchStep:
                 conn.commit()
 
                 if row is None:
-                    logger.info(
+                    logger.debug(
                         (
                             "Skipping registered silver batch "
                             "because it is not claimable:"
@@ -108,7 +108,7 @@ class SelectRegisteredSilverBatchStep:
                     "claimed_by": row[8],
                 }
 
-                logger.info(
+                logger.debug(
                     (
                         "Claimed registered silver batch:"
                         " batch_id={}, file_name={}, status={}, claimed_by={}"
@@ -130,5 +130,5 @@ class SelectRegisteredSilverBatchStep:
             if owns_connection:
                 conn.close()
 
-        logger.info("No registered silver batch found")
+        logger.debug("No registered silver batch found")
         set_current_silver_batch(context, None)

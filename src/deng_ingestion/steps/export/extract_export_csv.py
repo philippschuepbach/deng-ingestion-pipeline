@@ -32,7 +32,7 @@ class ExtractExportCsvStep:
         raw_dir = context.working_dir / "data" / "raw"
         raw_dir.mkdir(parents=True, exist_ok=True)
 
-        logger.info(
+        logger.debug(
             "Extracting export archive: batch_id={}, archive_path={}",
             batch["batch_id"],
             archive_path,
@@ -63,7 +63,7 @@ class ExtractExportCsvStep:
                 if safe_extracted_path != extracted_path:
                     safe_extracted_path.rename(extracted_path)
             else:
-                logger.info(
+                logger.debug(
                     "Extracted CSV already exists locally, reusing file: {}",
                     extracted_path,
                 )

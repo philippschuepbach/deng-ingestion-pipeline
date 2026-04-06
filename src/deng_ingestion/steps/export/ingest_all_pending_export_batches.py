@@ -54,7 +54,7 @@ class IngestAllPendingExportBatchesStep:
                 )
 
                 processed_batches += 1
-                logger.info(
+                logger.debug(
                     "Processed export batch {}: batch_id={}, file_name={}",
                     processed_batches,
                     current_batch["batch_id"],
@@ -67,7 +67,7 @@ class IngestAllPendingExportBatchesStep:
 
         set_processed_batches(context, processed_batches)
 
-        logger.info(
+        logger.debug(
             "Finished ingest-all export step: processed_batches={}",
             processed_batches,
         )

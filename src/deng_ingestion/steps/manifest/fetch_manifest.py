@@ -19,7 +19,7 @@ class FetchManifestStep:
     source_type: str
 
     def run(self, context: PipelineContext) -> None:
-        logger.info(
+        logger.debug(
             "Fetching manifest: source_type={}, url={}",
             self.source_type,
             self.manifest_url,
@@ -34,7 +34,7 @@ class FetchManifestStep:
         set_manifest_text(context, manifest_text)
         set_manifest_source_type(context, self.source_type)
 
-        logger.info(
+        logger.debug(
             "Fetched manifest successfully: source_type={}, bytes={}",
             self.source_type,
             len(manifest_text.encode("utf-8")),

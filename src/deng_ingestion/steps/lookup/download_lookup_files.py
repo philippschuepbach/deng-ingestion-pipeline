@@ -40,7 +40,7 @@ class DownloadLookupFilesStep:
 
             source_url = f"{GDELT_LOOKUPS_BASE_URL}{file_name}"
 
-            logger.info("Downloading lookup file: {} -> {}", source_url, target_path)
+            logger.debug("Downloading lookup file: {} -> {}", source_url, target_path)
 
             download_binary_to_file(
                 source_url,
@@ -54,7 +54,7 @@ class DownloadLookupFilesStep:
         set_downloaded_lookup_files(context, downloaded_files)
         set_reused_lookup_files(context, reused_files)
 
-        logger.info(
+        logger.debug(
             "Finished lookup file sync: downloaded_files={}, reused_files={}",
             len(downloaded_files),
             len(reused_files),

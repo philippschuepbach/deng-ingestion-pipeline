@@ -15,7 +15,7 @@ class BuildRiskAlertsGoldStep:
     name: str = "build_risk_alerts_gold"
 
     def run(self, context: PipelineContext) -> None:
-        logger.info("Building risk_alerts_gold via full refresh")
+        logger.debug("Building risk_alerts_gold via full refresh")
 
         truncate_sql = "TRUNCATE TABLE risk_alerts_gold RESTART IDENTITY"
         insert_sql = load_sql("gold", "build_risk_alerts_gold.sql")
@@ -47,7 +47,7 @@ class BuildRiskAlertsGoldStep:
 
         set_gold_row_count(context, gold_row_count)
 
-        logger.info(
+        logger.debug(
             "Finished building risk_alerts_gold: row_count={}",
             gold_row_count,
         )

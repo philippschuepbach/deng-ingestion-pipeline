@@ -8,6 +8,8 @@ from typing import cast
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
+from loguru import logger
+
 RETRYABLE_HTTP_STATUS_CODES = {408, 429, 500, 502, 503, 504}
 
 
@@ -78,6 +80,16 @@ def download_binary_to_file(
 
         except Exception as exc:
             last_exception = exc
+
+            if isinstance(exc, HTTPError):
+                logger.warning(
+                    "HTTP retryable error while downloading: "
+                    "url={}, status_code={}, attempt={}/{}",
+                    url,
+                    exc.code,
+                    attempt,
+                    retries,
+                )
 
             if temp_path.exists():
                 temp_path.unlink()

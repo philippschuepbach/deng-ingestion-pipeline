@@ -27,7 +27,7 @@ class SelectRegisteredExportBatchStep:
             set_remaining_registered_export_batch_ids(context, remaining_batch_ids)
 
         if not remaining_batch_ids:
-            logger.info("No registered export batch found")
+            logger.debug("No registered export batch found")
             set_current_batch(context, None)
             return
 
@@ -76,7 +76,7 @@ class SelectRegisteredExportBatchStep:
                 conn.commit()
 
                 if row is None:
-                    logger.info(
+                    logger.debug(
                         (
                             "Failed to claim registered export batch "
                             "(may be claimed by another process):"
@@ -98,7 +98,7 @@ class SelectRegisteredExportBatchStep:
                     "claimed_by": row[8],
                 }
 
-                logger.info(
+                logger.debug(
                     (
                         "Claimed registered export batch:"
                         " batch_id={}, file_name={}, status={}, claimed_by={}"
@@ -120,5 +120,5 @@ class SelectRegisteredExportBatchStep:
             if owns_connection:
                 conn.close()
 
-        logger.info("No registered export batch found")
+        logger.debug("No registered export batch found")
         set_current_batch(context, None)

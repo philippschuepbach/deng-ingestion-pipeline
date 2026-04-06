@@ -53,7 +53,7 @@ class TransformRegisteredBatchesToSilverStep:
                 processed_batches += 1
                 transformed_export_batch_ids.append(current_batch["batch_id"])
 
-                logger.info(
+                logger.debug(
                     (
                         "Processed registered silver batch {}:"
                         " batch_id={}, file_name={}, inserted_rows={}"
@@ -71,7 +71,7 @@ class TransformRegisteredBatchesToSilverStep:
         set_processed_silver_batches(context, processed_batches)
         set_transformed_export_batch_ids(context, transformed_export_batch_ids)
 
-        logger.info(
+        logger.debug(
             (
                 "Finished transform registered silver step:"
                 " requested_batches={}, processed_batches={}"

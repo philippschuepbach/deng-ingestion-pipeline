@@ -42,7 +42,7 @@ class SelectPendingSilverBatchStep:
                 conn.close()
 
         if row is None:
-            logger.info("No pending silver batch found")
+            logger.debug("No pending silver batch found")
             set_current_silver_batch(context, None)
             return
 
@@ -58,7 +58,7 @@ class SelectPendingSilverBatchStep:
             "claimed_by": row[8],
         }
 
-        logger.info(
+        logger.debug(
             "Claimed pending silver batch: "
             "batch_id={}, file_name={}, status={}, claimed_by={}",
             batch["batch_id"],

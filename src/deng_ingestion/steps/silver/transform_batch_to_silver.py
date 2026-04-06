@@ -27,7 +27,7 @@ class TransformBatchToSilverStep:
             logger.debug("Skipping silver transformation because no batch is selected")
             return
 
-        logger.info(
+        logger.debug(
             "Transforming bronze batch to silver: batch_id={}, file_name={}",
             batch["batch_id"],
             batch["file_name"],
@@ -65,7 +65,7 @@ class TransformBatchToSilverStep:
 
         set_last_silver_inserted_rows(context, inserted_rows)
 
-        logger.info(
+        logger.debug(
             "Finished silver transformation for batch_id={}, inserted_rows={}",
             batch["batch_id"],
             inserted_rows,

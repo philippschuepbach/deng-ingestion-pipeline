@@ -71,7 +71,7 @@ class SelectPendingExportBatchStep:
                 conn.close()
 
         if row is None:
-            logger.info("No pending export batch found")
+            logger.debug("No pending export batch found")
             set_current_batch(context, None)
             return
 
@@ -87,7 +87,7 @@ class SelectPendingExportBatchStep:
             "claimed_by": row[8],
         }
 
-        logger.info(
+        logger.debug(
             (
                 "Claimed pending export batch:"
                 " batch_id={}, file_name={}, status={}, claimed_by={}"

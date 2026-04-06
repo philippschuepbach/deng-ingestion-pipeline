@@ -34,7 +34,7 @@ class LoadLookupDimensionsStep:
     def run(self, context: PipelineContext) -> None:
         lookup_dir = _resolve_lookup_dir(context)
 
-        logger.info("Loading lookup dimensions from {}", lookup_dir)
+        logger.debug("Loading lookup dimensions from {}", lookup_dir)
 
         (
             fips_country_codes,
@@ -72,7 +72,7 @@ class LoadLookupDimensionsStep:
 
         set_loaded_lookup_counts(context, loaded_lookup_counts)
 
-        logger.info(
+        logger.debug(
             (
                 "Loaded lookup dimensions: "
                 "fips_countries={}, cameo_countries={}, "

@@ -48,7 +48,7 @@ class TransformAllPendingBatchesToSilverStep:
                 )
 
                 processed_batches += 1
-                logger.info(
+                logger.debug(
                     (
                         "Processed pending silver batch: "
                         "batch_id={}, file_name={}, inserted_rows={}"
@@ -63,7 +63,7 @@ class TransformAllPendingBatchesToSilverStep:
 
         set_processed_silver_batches(context, processed_batches)
 
-        logger.info(
+        logger.debug(
             "Finished transform-all silver step: processed_batches={}",
             processed_batches,
         )

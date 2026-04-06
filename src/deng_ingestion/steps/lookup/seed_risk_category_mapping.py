@@ -68,7 +68,7 @@ class SeedRiskCategoryMappingStep:
     name: str = "seed_risk_category_mapping"
 
     def run(self, context: PipelineContext) -> None:
-        logger.info("Seeding dim_risk_category_mapping")
+        logger.debug("Seeding dim_risk_category_mapping")
 
         conn, owns_connection = get_context_connection(context)
 
@@ -93,7 +93,7 @@ class SeedRiskCategoryMappingStep:
             len(RISK_CATEGORY_MAPPING_ROWS),
         )
 
-        logger.info(
+        logger.debug(
             "Seeded dim_risk_category_mapping: row_count={}",
             len(RISK_CATEGORY_MAPPING_ROWS),
         )

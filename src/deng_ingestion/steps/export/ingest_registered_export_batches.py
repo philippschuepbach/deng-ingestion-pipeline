@@ -60,7 +60,7 @@ class IngestRegisteredExportBatchesStep:
                 processed_batches += 1
                 ingested_export_batch_ids.append(current_batch["batch_id"])
 
-                logger.info(
+                logger.debug(
                     "Processed registered export batch {}: batch_id={}, file_name={}",
                     processed_batches,
                     current_batch["batch_id"],
@@ -75,7 +75,7 @@ class IngestRegisteredExportBatchesStep:
         set_processed_batches(context, processed_batches)
         set_ingested_export_batch_ids(context, ingested_export_batch_ids)
 
-        logger.info(
+        logger.debug(
             (
                 "Finished ingest registered export batches step:"
                 " requested_batches={}, processed_batches={}"
