@@ -1,111 +1,96 @@
-# gdelt-ingestion
+<p align="center">
+  <img src="docs/images/title-banner.png" alt="Geopolitical Risk Ingestion Pipeline" width="600">
+</p>
 
-## Project Overview
-This project implements a robust data ingestion pipeline for the GDELT dataset, leveraging modern Python practices and tools. The pipeline is designed to be modular, maintainable, and easily deployable using Docker and Terraform. It includes components for fetching the latest GDELT data, downloading and extracting it safely, and loading it into both PostgreSQL and Google BigQuery for further analysis.
+# Geopolitical Risk Ingestion Pipeline
 
-## Quick Start
-1. Clone the repository and navigate to the project directory.
-2. Follow the setup instructions in the "Prerequisites & Setup" section below to install necessary tools and dependencies.
-3. Run the pipeline locally using the provided CLI or deploy it using Docker and Terraform.
+This project implements a reproducible end-to-end batch data pipeline for geopolitical risk analysis based on global event data.
+
+The pipeline ingests raw event batches, stores them in PostgreSQL, transforms them into analyst-oriented bronze, silver, and gold layers, and produces hourly country-level risk summaries for monitoring and drill-down analysis.
+
+The local setup is fully reproducible with Docker Compose and includes PostgreSQL, pgAdmin, and Kestra-based orchestration.
+
+## Prerequisites
+
+* [Docker](https://www.docker.com/get-started) installed and running on your machine
+
+## Quickstart
+
+### Start the local environment
 
 ```bash
-cp .env.example .env
 docker compose up -d
-uv run python -m gdelt_ingestion.cli ingest-local
 ```
 
-## Project Structure
+### Open the services
 
-**Key entrypoints:**
-- `src/gdelt_ingestion/cli.py` – main CLI entrypoint (local runs + orchestration hooks)
-- `orchestration/airflow/...` – Airflow DAG definition
-- `orchestration/kestra/...` – workflow definition for Kestra
-- `terraform/` – cloud infrastructure (GCS + BigQuery, etc.)
-- `sql/` – SQL scripts for database setup and queries
-```
-.
-├─ README.md
-├─ docker-compose.yml
-├─ .env.example
-├─ pyproject.toml
-├─ src/
-│  └─ gdelt_ingestion/
-│     ├─ __init__.py
-│     ├─ config.py
-│     ├─ logging_config.py
-│     ├─ cli.py
-│     │
-│     ├─ gdelt/
-│     │  ├─ __init__.py
-│     │  ├─ lastupdate.py
-│     │  ├─ download.py
-│     │  └─ extract.py
-│     │
-│     ├─ storage/
-│     │  ├─ __init__.py
-│     │  ├─ postgres.py
-│     │  ├─ gcs.py
-│     │  └─ bigquery.py
-│     │
-│     ├─ transform/
-│     │  ├─ __init__.py
-│     │  └─ transforms.py
-│     │
-│     └─ orchestration/
-│        ├─ airflow/
-│        │  └─ dags/
-│        │     └─ pipeline_dag.py
-│        └─ kestra/
-│           └─ workflow.yml
-│
-├─ terraform/
-│  ├─ main.tf
-│  ├─ variables.tf
-│  ├─ outputs.tf
-│  └─ README.md
-│
-├─ sql/
-│  ├─ init_postgres.sql
-│  └─ example_queries.sql
-│
-└─ tests/
-   ├─ test_lastupdate.py
-   ├─ test_extract.py
-   └─ ...
+* **pgAdmin:** `http://localhost:8085`
+* **Kestra:** `http://localhost:8080`
+
+### Run the pipeline
+
+#### Kestra (recommended)
+
+Use the Kestra UI to run the manual parent flow:
+
+* Namespace: `hslu.geopolitical_risk.main`
+* Flow: `pipeline_run_manual`
+
+You can run it:
+
+* without inputs for an incremental execution
+* or with `years`, `months`, and `days` for a historical backfill
+
+Example:
+
+* `days = 2` → backfill the last 2 days before running the downstream pipeline
+
+> [!NOTE]
+> If you use a large backfill window (for example, several months), the pipeline may run for a long time. For local testing, it is recommended to start with a small backfill window (for example, 2 days) or run incrementally without inputs.
+
+#### CLI only (optional)
+
+If you want to run the full pipeline directly without Kestra:
+
+```bash
+docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
 ```
 
-## Pipeline Overview
+For an incremental run:
 
-### Local pipeline
-1. **Fetch Latest URL:** Retrieve the latest GDELT data URL from the "lastupdate" endpoint.
-2. **Download Data:** Download the ZIP file from the extracted URL.
-3. **Extract Data:** Safely extract the contents of the ZIP file, ensuring no path traversal vulnerabilities.
-4. **Load to PostgreSQL:** Load the raw data into a PostgreSQL database for initial storage and querying.
-5. **Upload to GCS:** Upload the raw data file to Google Cloud Storage for backup and further processing.
-6. **Load to BigQuery:** Load the data into Google BigQuery for scalable analysis and querying.
-
-### Cloud pipeline
-1. **Upload to GCS:** Upload the raw data file to Google Cloud Storage for backup and further processing.
-2. **Transform Data:** Apply necessary transformations to the raw data to prepare it for analysis (e.g., cleaning, normalization).
-3. **Load to BigQuery:** Load the data into Google BigQuery for scalable analysis and querying.
-
-## Configuration
-All configuration parameters (e.g., database credentials, GCP settings, file paths) are managed through environment variables. A `.env.example` file is provided as a template. Make sure to create a `.env` file with the appropriate values before running the pipeline.
-
-## Development & Testing
-The project includes unit tests for critical components. To run the tests, use the following command:
+```bash
+docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart
 ```
-uv run pytest
-```
-Make sure to have the necessary test dependencies installed in your environment.
 
-## Terraform & Deployment
-The `terraform/` directory contains infrastructure-as-code definitions for deploying the pipeline on cloud platforms. Follow the instructions in `terraform/README.md` for setting up and deploying the infrastructure.
+## Verification
 
+For a step-by-step reviewer path, service login details, and SQL verification queries, see:
+
+* [06 Midterm Verification](docs/06_midterm_verification.md)
+
+## Documentation
+
+Additional project documentation is available in the `docs/` directory:
+
+* [01 Architecture and Use Case](docs/01_architecture_and_use_case.md)
+* [02 Data Dictionary](docs/02_data_dictionary.md)
+* [03 Orchestration](docs/03_orchestration.md)
+* [04 Local Development](docs/04_local_development.md)
+* [05 Known Issues and Design Decisions](docs/05_known_issues_and_design_decisions.md)
+* [06 Midterm Verification](docs/06_midterm_verification.md)
+
+## Data Source Attribution
+
+This project uses event data from the **GDELT Project**.
+
+This repository is an independent educational project and is not affiliated with or endorsed by the GDELT Project.
+
+For more information, see:
+
+* [https://www.gdeltproject.org/](https://www.gdeltproject.org/)
 
 ## License
 
-This project is licensed under the GNU Affero General Public License v3.0 or later
-(AGPL-3.0-or-later).
+This project is licensed under the **GNU Affero General Public License v3.0 or later** (**AGPL-3.0-or-later**).
 
 See the [LICENSE](./LICENSE) file for the full license text.
