@@ -234,8 +234,18 @@ def set_lookup_dir(context: PipelineContext, value: Path) -> None:
     context.data[LOOKUP_DIR] = value
 
 
+def get_downloaded_lookup_files(context: PipelineContext) -> list[str]:
+    value = context.data.get(DOWNLOADED_LOOKUP_FILES, [])
+    return cast(list[str], value)
+
+
 def set_downloaded_lookup_files(context: PipelineContext, value: list[str]) -> None:
     context.data[DOWNLOADED_LOOKUP_FILES] = value
+
+
+def get_reused_lookup_files(context: PipelineContext) -> list[str]:
+    value = context.data.get(REUSED_LOOKUP_FILES, [])
+    return cast(list[str], value)
 
 
 def set_reused_lookup_files(context: PipelineContext, value: list[str]) -> None:
