@@ -5,6 +5,12 @@ from argparse import Namespace
 from loguru import logger
 
 from deng_ingestion.jobs import build_incremental_pipeline_job
+from deng_ingestion.pipeline.context_access import (
+    get_gold_row_count,
+    get_ingested_export_batch_ids,
+    get_registered_export_batch_ids,
+    get_transformed_export_batch_ids,
+)
 
 from .common import build_context
 
@@ -19,8 +25,8 @@ def handle_pipeline_incremental(args: Namespace) -> None:
 
     logger.info(
         "Finished pipeline incremental: registered_export_batch_ids={}, ingested_export_batch_ids={}, transformed_export_batch_ids={}, gold_row_count={}",
-        context.data.get("registered_export_batch_ids", []),
-        context.data.get("ingested_export_batch_ids", []),
-        context.data.get("transformed_export_batch_ids", []),
-        context.data.get("gold_row_count", 0),
+        get_registered_export_batch_ids(context),
+        get_ingested_export_batch_ids(context),
+        get_transformed_export_batch_ids(context),
+        get_gold_row_count(context),
     )

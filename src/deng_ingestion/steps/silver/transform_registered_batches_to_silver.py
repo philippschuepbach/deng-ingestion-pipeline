@@ -6,6 +6,18 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    clear_current_silver_batch,
+    clear_db_connection,
+    clear_last_silver_inserted_rows,
+    clear_remaining_ingested_export_batch_ids,
+    get_current_silver_batch,
+    get_ingested_export_batch_ids,
+    get_last_silver_inserted_rows,
+    set_db_connection,
+    set_processed_silver_batches,
+    set_transformed_export_batch_ids,
+)
 from .select_registered_silver_batch import SelectRegisteredSilverBatchStep
 from .transform_batch_to_silver import TransformBatchToSilverStep
 
@@ -22,16 +34,16 @@ class TransformRegisteredBatchesToSilverStep:
         transformed_export_batch_ids: list[int] = []
 
         conn = get_connection()
-        context.data["db_connection"] = conn
+        set_db_connection(context, conn)
 
         try:
             while True:
-                context.data.pop("current_silver_batch", None)
-                context.data.pop("last_silver_inserted_rows", None)
+                clear_current_silver_batch(context)
+                clear_last_silver_inserted_rows(context)
 
                 select_step.run(context)
 
-                current_batch = context.data.get("current_silver_batch")
+                current_batch = get_current_silver_batch(context)
                 if current_batch is None:
                     break
 
@@ -45,18 +57,18 @@ class TransformRegisteredBatchesToSilverStep:
                     processed_batches,
                     current_batch["batch_id"],
                     current_batch["file_name"],
-                    context.data.get("last_silver_inserted_rows", 0),
+                    get_last_silver_inserted_rows(context) or 0,
                 )
         finally:
-            context.data.pop("db_connection", None)
-            context.data.pop("remaining_ingested_export_batch_ids", None)
+            clear_db_connection(context)
+            clear_remaining_ingested_export_batch_ids(context)
             conn.close()
 
-        context.data["processed_silver_batches"] = processed_batches
-        context.data["transformed_export_batch_ids"] = transformed_export_batch_ids
+        set_processed_silver_batches(context, processed_batches)
+        set_transformed_export_batch_ids(context, transformed_export_batch_ids)
 
         logger.info(
             "Finished transform registered silver step: requested_batches={}, processed_batches={}",
-            len(context.data.get("ingested_export_batch_ids", [])),
+            len(get_ingested_export_batch_ids(context)),
             processed_batches,
         )

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from loguru import logger
 
@@ -12,6 +11,10 @@ from deng_ingestion.db.pipeline_batches import (
     mark_batch_failed,
 )
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_current_batch,
+    set_archive_path,
+)
 
 
 @dataclass(frozen=True)
@@ -19,7 +22,7 @@ class DownloadExportArchiveStep:
     name: str = "download_export_archive"
 
     def run(self, context: PipelineContext) -> None:
-        batch = context.data.get("current_batch")
+        batch = get_current_batch(context)
         if batch is None:
             logger.debug("Skipping archive download because no batch is selected")
             return
@@ -74,4 +77,4 @@ class DownloadExportArchiveStep:
             if owns_connection:
                 conn.close()
 
-        context.data["archive_path"] = archive_path
+        set_archive_path(context, archive_path)

@@ -5,9 +5,15 @@ from dataclasses import dataclass
 from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
+from deng_ingestion.db.pipeline_batches import CLAIM_TTL_MINUTES
 from deng_ingestion.pipeline.context import PipelineContext
-
-CLAIM_TTL_MINUTES = 30
+from deng_ingestion.pipeline.context_access import (
+    get_ingested_export_batch_ids,
+    get_remaining_ingested_export_batch_ids,
+    set_current_silver_batch,
+    set_remaining_ingested_export_batch_ids,
+)
+from deng_ingestion.pipeline.context_types import SilverBatchInfo
 
 
 @dataclass(frozen=True)
@@ -15,16 +21,14 @@ class SelectRegisteredSilverBatchStep:
     name: str = "select_registered_silver_batch"
 
     def run(self, context: PipelineContext) -> None:
-        remaining_batch_ids = context.data.get("remaining_ingested_export_batch_ids")
+        remaining_batch_ids = get_remaining_ingested_export_batch_ids(context)
         if remaining_batch_ids is None:
-            remaining_batch_ids = list(
-                context.data.get("ingested_export_batch_ids", [])
-            )
-            context.data["remaining_ingested_export_batch_ids"] = remaining_batch_ids
+            remaining_batch_ids = list(get_ingested_export_batch_ids(context))
+            set_remaining_ingested_export_batch_ids(context, remaining_batch_ids)
 
         if not remaining_batch_ids:
             logger.info("No registered silver batch found")
-            context.data["current_silver_batch"] = None
+            set_current_silver_batch(context, None)
             return
 
         sql = """
@@ -88,7 +92,7 @@ class SelectRegisteredSilverBatchStep:
                     )
                     continue
 
-                batch = {
+                batch: SilverBatchInfo = {
                     "batch_id": row[0],
                     "source_type": row[1],
                     "file_type": row[2],
@@ -108,7 +112,7 @@ class SelectRegisteredSilverBatchStep:
                     batch["claimed_by"],
                 )
 
-                context.data["current_silver_batch"] = batch
+                set_current_silver_batch(context, batch)
                 return
 
         except Exception:
@@ -120,4 +124,4 @@ class SelectRegisteredSilverBatchStep:
                 conn.close()
 
         logger.info("No registered silver batch found")
-        context.data["current_silver_batch"] = None
+        set_current_silver_batch(context, None)

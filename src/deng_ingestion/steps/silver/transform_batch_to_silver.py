@@ -10,6 +10,10 @@ from deng_ingestion.db.pipeline_batches import (
     mark_batch_failed,
 )
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_current_silver_batch,
+    set_last_silver_inserted_rows,
+)
 
 
 @dataclass(frozen=True)
@@ -17,7 +21,7 @@ class TransformBatchToSilverStep:
     name: str = "transform_batch_to_silver"
 
     def run(self, context: PipelineContext) -> None:
-        batch = context.data.get("current_silver_batch")
+        batch = get_current_silver_batch(context)
         if batch is None:
             logger.debug("Skipping silver transformation because no batch is selected")
             return
@@ -126,7 +130,7 @@ class TransformBatchToSilverStep:
             if owns_connection:
                 conn.close()
 
-        context.data["last_silver_inserted_rows"] = inserted_rows
+        set_last_silver_inserted_rows(context, inserted_rows)
 
         logger.info(
             "Finished silver transformation for batch_id={}, inserted_rows={}",

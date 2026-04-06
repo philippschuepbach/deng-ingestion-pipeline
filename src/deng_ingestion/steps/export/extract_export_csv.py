@@ -7,6 +7,11 @@ from zipfile import ZipFile
 from loguru import logger
 
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_archive_path,
+    get_current_batch,
+    set_extracted_csv_path,
+)
 
 
 @dataclass(frozen=True)
@@ -14,12 +19,15 @@ class ExtractExportCsvStep:
     name: str = "extract_export_csv"
 
     def run(self, context: PipelineContext) -> None:
-        batch = context.data.get("current_batch")
+        batch = get_current_batch(context)
         if batch is None:
             logger.debug("Skipping extraction because no batch is selected")
             return
 
-        archive_path: Path = context.data["archive_path"]
+        archive_path = get_archive_path(context)
+        if archive_path is None:
+            raise ValueError("Expected archive path in pipeline context")
+
         raw_dir = context.working_dir / "data" / "raw"
         raw_dir.mkdir(parents=True, exist_ok=True)
 
@@ -54,4 +62,4 @@ class ExtractExportCsvStep:
                     extracted_path,
                 )
 
-        context.data["extracted_csv_path"] = extracted_path
+        set_extracted_csv_path(context, extracted_path)

@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_manifest_entries,
+    set_filtered_manifest_entries,
+)
 
 
 @dataclass(frozen=True)
@@ -14,7 +18,9 @@ class FilterManifestEntriesStep:
     date_to: datetime | None = None
 
     def run(self, context: PipelineContext) -> None:
-        entries = context.data["manifest_entries"]
+        entries = get_manifest_entries(context)
+        if entries is None:
+            raise ValueError("Expected manifest entries in pipeline context")
 
         filtered = []
         for entry in entries:
@@ -29,4 +35,4 @@ class FilterManifestEntriesStep:
 
             filtered.append(entry)
 
-        context.data["filtered_manifest_entries"] = filtered
+        set_filtered_manifest_entries(context, filtered)

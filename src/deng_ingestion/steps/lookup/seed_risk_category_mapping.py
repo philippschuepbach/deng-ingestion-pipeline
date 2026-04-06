@@ -6,6 +6,9 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    set_seeded_risk_category_mapping_count,
+)
 
 RISK_CATEGORY_MAPPING_ROWS: list[dict[str, str | bool]] = [
     {
@@ -101,8 +104,9 @@ class SeedRiskCategoryMappingStep:
             if owns_connection:
                 conn.close()
 
-        context.data["seeded_risk_category_mapping_count"] = len(
-            RISK_CATEGORY_MAPPING_ROWS
+        set_seeded_risk_category_mapping_count(
+            context,
+            len(RISK_CATEGORY_MAPPING_ROWS),
         )
 
         logger.info(

@@ -13,6 +13,10 @@ from deng_ingestion.lookups.loader import (
     load_fips_country_codes,
 )
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_lookup_dir,
+    set_loaded_lookup_counts,
+)
 
 
 @dataclass(frozen=True)
@@ -20,8 +24,8 @@ class LoadLookupDimensionsStep:
     name: str = "load_lookup_dimensions"
 
     def run(self, context: PipelineContext) -> None:
-        lookup_dir = context.data.get(
-            "lookup_dir", context.working_dir / "data" / "lookups"
+        lookup_dir = get_lookup_dir(context) or (
+            context.working_dir / "data" / "lookups"
         )
         if not isinstance(lookup_dir, Path):
             lookup_dir = Path(lookup_dir)
@@ -144,13 +148,16 @@ class LoadLookupDimensionsStep:
             if owns_connection:
                 conn.close()
 
-        context.data["loaded_lookup_counts"] = {
-            "dim_fips_country_codes": len(fips_country_codes),
-            "dim_cameo_country_codes": len(cameo_country_codes),
-            "dim_cameo_known_groups": len(cameo_known_groups),
-            "dim_cameo_event_roots": len(cameo_event_roots),
-            "dim_cameo_event_codes": len(cameo_event_codes),
-        }
+        set_loaded_lookup_counts(
+            context,
+            {
+                "dim_fips_country_codes": len(fips_country_codes),
+                "dim_cameo_country_codes": len(cameo_country_codes),
+                "dim_cameo_known_groups": len(cameo_known_groups),
+                "dim_cameo_event_roots": len(cameo_event_roots),
+                "dim_cameo_event_codes": len(cameo_event_codes),
+            },
+        )
 
         logger.info(
             "Loaded lookup dimensions: fips_countries={}, cameo_countries={}, known_groups={}, event_roots={}, event_codes={}",

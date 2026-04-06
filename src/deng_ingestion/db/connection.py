@@ -1,16 +1,19 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
+import psycopg2
 from dotenv import load_dotenv
 from loguru import logger
-import psycopg2
 from psycopg2.extensions import connection as PgConnection
 
-load_dotenv(Path(__file__).resolve().parents[3] / ".env")
+from deng_ingestion.core.paths import PROJECT_ROOT
+from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import get_db_connection
+
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 @dataclass(frozen=True)
@@ -81,8 +84,8 @@ def get_connection() -> PgConnection:
     )
 
 
-def get_context_connection(context: Any) -> tuple[PgConnection, bool]:
-    existing_connection = context.data.get("db_connection")
+def get_context_connection(context: PipelineContext) -> tuple[PgConnection, bool]:
+    existing_connection = get_db_connection(context)
     if existing_connection is not None:
         return existing_connection, False
 

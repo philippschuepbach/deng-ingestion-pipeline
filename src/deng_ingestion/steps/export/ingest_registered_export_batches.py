@@ -6,6 +6,18 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    clear_archive_path,
+    clear_current_batch,
+    clear_db_connection,
+    clear_extracted_csv_path,
+    clear_remaining_registered_export_batch_ids,
+    get_current_batch,
+    get_registered_export_batch_ids,
+    set_db_connection,
+    set_ingested_export_batch_ids,
+    set_processed_batches,
+)
 from .download_export_archive import DownloadExportArchiveStep
 from .extract_export_csv import ExtractExportCsvStep
 from .load_export_events_to_bronze import LoadExportEventsToBronzeStep
@@ -26,27 +38,19 @@ class IngestRegisteredExportBatchesStep:
         ingested_export_batch_ids: list[int] = []
 
         conn = get_connection()
-        context.data["db_connection"] = conn
+        set_db_connection(context, conn)
 
         try:
             while True:
-                context.data.pop("current_batch", None)
-                context.data.pop("archive_path", None)
-                context.data.pop("extracted_csv_path", None)
+                clear_current_batch(context)
+                clear_archive_path(context)
+                clear_extracted_csv_path(context)
 
                 select_step.run(context)
 
-                current_batch = context.data.get("current_batch")
+                current_batch = get_current_batch(context)
                 if current_batch is None:
                     break
-
-                if current_batch["loaded_at"] is not None:
-                    logger.info(
-                        "Skipping already loaded registered export batch: batch_id={}, file_name={}",
-                        current_batch["batch_id"],
-                        current_batch["file_name"],
-                    )
-                    continue
 
                 download_step.run(context)
                 extract_step.run(context)
@@ -63,15 +67,15 @@ class IngestRegisteredExportBatchesStep:
                 )
 
         finally:
-            context.data.pop("db_connection", None)
-            context.data.pop("remaining_registered_export_batch_ids", None)
+            clear_db_connection(context)
+            clear_remaining_registered_export_batch_ids(context)
             conn.close()
 
-        context.data["processed_batches"] = processed_batches
-        context.data["ingested_export_batch_ids"] = ingested_export_batch_ids
+        set_processed_batches(context, processed_batches)
+        set_ingested_export_batch_ids(context, ingested_export_batch_ids)
 
         logger.info(
             "Finished ingest registered export batches step: requested_batches={}, processed_batches={}",
-            len(context.data.get("registered_export_batch_ids", [])),
+            len(get_registered_export_batch_ids(context)),
             processed_batches,
         )

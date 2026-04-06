@@ -4,6 +4,11 @@ from dataclasses import dataclass
 
 from deng_ingestion.db.connection import get_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_filtered_manifest_entries,
+    get_manifest_source_type,
+    set_registered_export_batch_ids,
+)
 
 
 @dataclass(frozen=True)
@@ -11,8 +16,13 @@ class RegisterManifestBatchesForCurrentRunStep:
     name: str = "register_manifest_batches_for_current_run"
 
     def run(self, context: PipelineContext) -> None:
-        source_type = context.data["manifest_source_type"]
-        entries = context.data["filtered_manifest_entries"]
+        source_type = get_manifest_source_type(context)
+        if source_type is None:
+            raise ValueError("Expected manifest source type in pipeline context")
+
+        entries = get_filtered_manifest_entries(context)
+        if entries is None:
+            raise ValueError("Expected filtered manifest entries in pipeline context")
 
         sql = """
         INSERT INTO pipeline_batches (
@@ -66,6 +76,7 @@ class RegisterManifestBatchesForCurrentRunStep:
 
             conn.commit()
 
-        context.data["registered_export_batch_ids"] = list(
-            dict.fromkeys(registered_export_batch_ids)
+        set_registered_export_batch_ids(
+            context,
+            list(dict.fromkeys(registered_export_batch_ids)),
         )

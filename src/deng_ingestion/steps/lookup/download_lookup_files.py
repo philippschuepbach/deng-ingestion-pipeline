@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from loguru import logger
 
@@ -11,6 +10,11 @@ from deng_ingestion.lookups.config import (
     GDELT_LOOKUPS_BASE_URL,
 )
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    set_downloaded_lookup_files,
+    set_lookup_dir,
+    set_reused_lookup_files,
+)
 
 
 @dataclass(frozen=True)
@@ -46,9 +50,9 @@ class DownloadLookupFilesStep:
             )
             downloaded_files.append(file_name)
 
-        context.data["lookup_dir"] = lookup_dir
-        context.data["downloaded_lookup_files"] = downloaded_files
-        context.data["reused_lookup_files"] = reused_files
+        set_lookup_dir(context, lookup_dir)
+        set_downloaded_lookup_files(context, downloaded_files)
+        set_reused_lookup_files(context, reused_files)
 
         logger.info(
             "Finished lookup file sync: downloaded_files={}, reused_files={}",

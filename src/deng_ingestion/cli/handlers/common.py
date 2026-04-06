@@ -3,9 +3,13 @@ from __future__ import annotations
 from argparse import Namespace
 from datetime import UTC, datetime
 
-from deng_ingestion.db.connection import get_connection
 from deng_ingestion.core.paths import PROJECT_ROOT
+from deng_ingestion.db.connection import get_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    clear_db_connection,
+    set_db_connection,
+)
 
 
 def build_context(run_id: str, execution_ts: datetime | None = None) -> PipelineContext:
@@ -28,10 +32,10 @@ def has_backfill_window(args: Namespace) -> bool:
 
 def run_job_with_context_connection(job, context: PipelineContext) -> None:
     conn = get_connection()
-    context.data["db_connection"] = conn
+    set_db_connection(context, conn)
 
     try:
         job.run(context)
     finally:
-        context.data.pop("db_connection", None)
+        clear_db_connection(context)
         conn.close()

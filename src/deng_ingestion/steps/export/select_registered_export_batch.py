@@ -5,9 +5,15 @@ from dataclasses import dataclass
 from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
+from deng_ingestion.db.pipeline_batches import CLAIM_TTL_MINUTES
 from deng_ingestion.pipeline.context import PipelineContext
-
-CLAIM_TTL_MINUTES = 30
+from deng_ingestion.pipeline.context_access import (
+    get_registered_export_batch_ids,
+    get_remaining_registered_export_batch_ids,
+    set_current_batch,
+    set_remaining_registered_export_batch_ids,
+)
+from deng_ingestion.pipeline.context_types import BatchInfo
 
 
 @dataclass(frozen=True)
@@ -15,16 +21,14 @@ class SelectRegisteredExportBatchStep:
     name: str = "select_registered_export_batch"
 
     def run(self, context: PipelineContext) -> None:
-        remaining_batch_ids = context.data.get("remaining_registered_export_batch_ids")
+        remaining_batch_ids = get_remaining_registered_export_batch_ids(context)
         if remaining_batch_ids is None:
-            remaining_batch_ids = list(
-                context.data.get("registered_export_batch_ids", [])
-            )
-            context.data["remaining_registered_export_batch_ids"] = remaining_batch_ids
+            remaining_batch_ids = list(get_registered_export_batch_ids(context))
+            set_remaining_registered_export_batch_ids(context, remaining_batch_ids)
 
         if not remaining_batch_ids:
             logger.info("No registered export batch found")
-            context.data["current_batch"] = None
+            set_current_batch(context, None)
             return
 
         sql = """
@@ -78,7 +82,7 @@ class SelectRegisteredExportBatchStep:
                     )
                     continue
 
-                batch = {
+                batch: BatchInfo = {
                     "batch_id": row[0],
                     "source_type": row[1],
                     "file_type": row[2],
@@ -98,7 +102,7 @@ class SelectRegisteredExportBatchStep:
                     batch["claimed_by"],
                 )
 
-                context.data["current_batch"] = batch
+                set_current_batch(context, batch)
                 return
 
         except Exception:
@@ -110,4 +114,4 @@ class SelectRegisteredExportBatchStep:
                 conn.close()
 
         logger.info("No registered export batch found")
-        context.data["current_batch"] = None
+        set_current_batch(context, None)

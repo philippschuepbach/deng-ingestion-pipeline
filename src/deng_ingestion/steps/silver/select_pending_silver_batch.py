@@ -7,6 +7,8 @@ from loguru import logger
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.db.pipeline_batches import CLAIM_TTL_MINUTES
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import set_current_silver_batch
+from deng_ingestion.pipeline.context_types import SilverBatchInfo
 
 
 @dataclass(frozen=True)
@@ -79,10 +81,10 @@ class SelectPendingSilverBatchStep:
 
         if row is None:
             logger.info("No pending silver batch found")
-            context.data["current_silver_batch"] = None
+            set_current_silver_batch(context, None)
             return
 
-        batch = {
+        batch: SilverBatchInfo = {
             "batch_id": row[0],
             "source_type": row[1],
             "file_type": row[2],
@@ -102,4 +104,4 @@ class SelectPendingSilverBatchStep:
             batch["claimed_by"],
         )
 
-        context.data["current_silver_batch"] = batch
+        set_current_silver_batch(context, batch)

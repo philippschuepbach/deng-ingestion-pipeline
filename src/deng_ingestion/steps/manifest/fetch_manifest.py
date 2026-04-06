@@ -6,6 +6,10 @@ from loguru import logger
 
 from deng_ingestion.core.http import fetch_text
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    set_manifest_source_type,
+    set_manifest_text,
+)
 
 
 @dataclass(frozen=True)
@@ -27,8 +31,8 @@ class FetchManifestStep:
             retries=3,
         )
 
-        context.data["manifest_text"] = manifest_text
-        context.data["manifest_source_type"] = self.source_type
+        set_manifest_text(context, manifest_text)
+        set_manifest_source_type(context, self.source_type)
 
         logger.info(
             "Fetched manifest successfully: source_type={}, bytes={}",

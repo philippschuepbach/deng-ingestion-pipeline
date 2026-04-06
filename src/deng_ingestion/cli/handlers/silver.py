@@ -8,6 +8,11 @@ from deng_ingestion.jobs import (
     build_transform_all_events_job,
     build_transform_events_job,
 )
+from deng_ingestion.pipeline.context_access import (
+    get_current_silver_batch,
+    get_last_silver_inserted_rows,
+    get_processed_silver_batches,
+)
 
 from .common import build_context, run_job_with_context_connection
 
@@ -20,7 +25,7 @@ def handle_silver_transform(args: Namespace) -> None:
 
     run_job_with_context_connection(job, context)
 
-    current_batch = context.data.get("current_silver_batch")
+    current_batch = get_current_silver_batch(context)
     if current_batch is None:
         logger.info("No pending silver batch was available")
     else:
@@ -28,7 +33,7 @@ def handle_silver_transform(args: Namespace) -> None:
             "Finished silver transform for batch_id={}, file_name={}, inserted_rows={}",
             current_batch["batch_id"],
             current_batch["file_name"],
-            context.data.get("last_silver_inserted_rows", 0),
+            get_last_silver_inserted_rows(context) or 0,
         )
 
 
@@ -40,7 +45,7 @@ def handle_silver_transform_all(args: Namespace) -> None:
 
     job.run(context)
 
-    processed_batches = context.data.get("processed_silver_batches", 0)
+    processed_batches = get_processed_silver_batches(context)
     logger.info(
         "Finished silver transform-all: processed_batches={}", processed_batches
     )

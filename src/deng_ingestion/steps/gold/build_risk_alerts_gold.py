@@ -6,6 +6,7 @@ from loguru import logger
 
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import set_gold_row_count
 
 
 @dataclass(frozen=True)
@@ -98,7 +99,7 @@ class BuildRiskAlertsGoldStep:
             if owns_connection:
                 conn.close()
 
-        context.data["gold_row_count"] = gold_row_count
+        set_gold_row_count(context, gold_row_count)
 
         logger.info(
             "Finished building risk_alerts_gold: row_count={}",

@@ -7,6 +7,8 @@ from loguru import logger
 from deng_ingestion.db.connection import get_context_connection
 from deng_ingestion.db.pipeline_batches import CLAIM_TTL_MINUTES
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import set_current_batch
+from deng_ingestion.pipeline.context_types import BatchInfo
 
 
 @dataclass(frozen=True)
@@ -70,10 +72,10 @@ class SelectPendingExportBatchStep:
 
         if row is None:
             logger.info("No pending export batch found")
-            context.data["current_batch"] = None
+            set_current_batch(context, None)
             return
 
-        batch = {
+        batch: BatchInfo = {
             "batch_id": row[0],
             "source_type": row[1],
             "file_type": row[2],
@@ -93,4 +95,4 @@ class SelectPendingExportBatchStep:
             batch["claimed_by"],
         )
 
-        context.data["current_batch"] = batch
+        set_current_batch(context, batch)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from loguru import logger
 
@@ -11,6 +10,10 @@ from deng_ingestion.db.pipeline_batches import (
     mark_batch_loaded,
 )
 from deng_ingestion.pipeline.context import PipelineContext
+from deng_ingestion.pipeline.context_access import (
+    get_current_batch,
+    get_extracted_csv_path,
+)
 from deng_ingestion.steps.export.export_bronze_sql import (
     build_copy_sql,
     build_insert_from_temp_sql,
@@ -24,12 +27,15 @@ class LoadExportEventsToBronzeStep:
     name: str = "load_export_events_to_bronze"
 
     def run(self, context: PipelineContext) -> None:
-        batch = context.data.get("current_batch")
+        batch = get_current_batch(context)
         if batch is None:
             logger.debug("Skipping bronze load because no batch is selected")
             return
 
-        csv_path: Path = context.data["extracted_csv_path"]
+        csv_path = get_extracted_csv_path(context)
+        if csv_path is None:
+            raise ValueError("Expected extracted CSV path in pipeline context")
+
         temp_table_name = "tmp_gdelt_export_import"
 
         logger.info(
