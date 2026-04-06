@@ -38,9 +38,7 @@ class IngestAllPendingExportBatchesStep:
 
         try:
             while True:
-                clear_current_batch(context)
-                clear_archive_path(context)
-                clear_extracted_csv_path(context)
+                _clear_iteration_state(context)
 
                 select_step.run(context)
 
@@ -48,9 +46,12 @@ class IngestAllPendingExportBatchesStep:
                 if current_batch is None:
                     break
 
-                download_step.run(context)
-                extract_step.run(context)
-                load_step.run(context)
+                _ingest_selected_batch(
+                    context=context,
+                    download_step=download_step,
+                    extract_step=extract_step,
+                    load_step=load_step,
+                )
 
                 processed_batches += 1
                 logger.info(
@@ -70,3 +71,21 @@ class IngestAllPendingExportBatchesStep:
             "Finished ingest-all export step: processed_batches={}",
             processed_batches,
         )
+
+
+def _clear_iteration_state(context: PipelineContext) -> None:
+    clear_current_batch(context)
+    clear_archive_path(context)
+    clear_extracted_csv_path(context)
+
+
+def _ingest_selected_batch(
+    *,
+    context: PipelineContext,
+    download_step: DownloadExportArchiveStep,
+    extract_step: ExtractExportCsvStep,
+    load_step: LoadExportEventsToBronzeStep,
+) -> None:
+    download_step.run(context)
+    extract_step.run(context)
+    load_step.run(context)
