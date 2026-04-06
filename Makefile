@@ -1,13 +1,13 @@
 .PHONY: format lint typecheck test check fix precommit
 
 format:
-	uv run black src
+	uv run black src tests
 
 lint:
-	uv run ruff check src
+	uv run ruff check src tests
 
 typecheck:
-	uv run mypy src
+	uv run mypy src tests
 
 test:
 	uv run pytest
