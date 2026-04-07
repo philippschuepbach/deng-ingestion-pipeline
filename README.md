@@ -312,6 +312,8 @@ A scheduled Kestra flow is included for recurring incremental execution:
 
 This scheduled flow is configured to run every 15 minutes. It is disabled by default to avoid unintended executions during local development.
 
+A disabled scheduled trigger may still appear in the Kestra UI under "Next Executions". In observed local tests, the trigger did not execute while disabled, so this is treated as a UI inconsistency rather than an active scheduled run.
+
 ## 4. Cleanup
 
 To stop the local environment and remove the project containers, networks, and volumes, run:

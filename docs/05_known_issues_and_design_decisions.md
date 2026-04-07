@@ -135,6 +135,24 @@ For review and local validation, smaller windows such as incremental runs or `da
 
 A practical next step is to add a batch limit or chunked execution mode for large backfills.
 
+### 7. Kestra UI inconsistency for disabled schedule triggers
+
+A disabled schedule trigger may still appear in the **Next Executions** view in the Kestra UI.
+
+#### Observed behavior
+
+- the trigger is marked as disabled in the flow definition
+- it does not execute at runtime
+- however, the UI may still display a next scheduled execution
+
+#### Consequence
+
+This can be misleading during local validation because the UI suggests that a scheduled run is still pending, even though the trigger is effectively disabled.
+
+#### Current interpretation
+
+This is treated as a Kestra UI inconsistency rather than a pipeline logic problem.
+
 ## Key Design Decisions
 
 ### 1. Bronze stays source-aligned
