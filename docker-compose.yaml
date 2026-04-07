@@ -43,6 +43,7 @@ services:
 
   pipeline:
     image: geopolitical-risk-ingestion-pipeline:latest
+    pull_policy: build
     build:
       context: .
       dockerfile: Dockerfile
