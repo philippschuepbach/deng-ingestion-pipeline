@@ -249,8 +249,6 @@ When running through Docker Compose, the pipeline stores working data in Docker 
 
 ## Database Inspection
 
-For the reviewer-oriented verification path and the core validation queries, see `06_midterm_verification.md`.
-
 The query below is useful during development for drill-down inspection:
 
 ```sql
