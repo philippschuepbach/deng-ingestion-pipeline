@@ -90,7 +90,7 @@ cp .env.example .env
 ### Build the local environment
 
 ```bash
-docker compose build
+docker compose --profile manual build
 ```
 
 ### Start the local environment
@@ -165,7 +165,7 @@ Expected result:
 Runs the pipeline against the latest available GDELT data without a historical backfill window.
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart
+docker compose --profile manual run --rm pipeline uv run --no-dev deng-ingestion quickstart
 ````
 
 #### Historical backfill run
@@ -181,7 +181,7 @@ The backfill window is controlled through relative time parameters such as:
 Example:
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
+docker compose --profile manual run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
 ```
 
 This processes a small historical backfill window of the last 2 days before continuing with the downstream pipeline.
@@ -315,12 +315,6 @@ This scheduled flow is configured to run every 15 minutes. It is disabled by def
 ## 4. Cleanup
 
 To stop the local environment and remove the project containers, networks, and volumes, run:
-
-```bash
-docker compose down --volumes --remove-orphans
-```
-
-The Container `pipeline` is started manually with the `manual` profile, so the cleanup command needs to specify the same profile to remove the relevant resources:
 
 ```bash
 docker compose --profile manual down --volumes --remove-orphans

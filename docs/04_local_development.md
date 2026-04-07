@@ -27,10 +27,15 @@ The example file contains local demo defaults for reproducible development and r
 
 ## Start Local Infrastructure
 
-Start PostgreSQL and pgAdmin:
+Build Images:
+```bash
+docker compose --profile manual build
+```
+
+Start the Docker containers:
 
 ```bash
-docker compose up -d pgdatabase pgadmin
+docker compose up -d
 ```
 
 Stop them again with:
@@ -197,7 +202,7 @@ The same CLI commands can be executed through one-off pipeline containers.
 General pattern:
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion <command>
+docker compose run --profile manual run --rm pipeline uv run --no-dev deng-ingestion <command>
 ```
 
 ### Examples
@@ -205,29 +210,29 @@ docker compose run --rm pipeline uv run --no-dev deng-ingestion <command>
 #### Incremental quickstart
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion quickstart
 ```
 
 #### Backfill quickstart
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
 ```
 
 #### Incremental pipeline run
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion pipeline incremental
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion pipeline incremental
 ```
 
 #### Manual step execution
 
 ```bash
-docker compose run --rm pipeline uv run --no-dev deng-ingestion lookups load
-docker compose run --rm pipeline uv run --no-dev deng-ingestion manifest backfill --days 2
-docker compose run --rm pipeline uv run --no-dev deng-ingestion export ingest-all
-docker compose run --rm pipeline uv run --no-dev deng-ingestion silver transform-all
-docker compose run --rm pipeline uv run --no-dev deng-ingestion gold build
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion lookups load
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion manifest backfill --days 2
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion export ingest-all
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion silver transform-all
+docker compose run --profile manual --rm pipeline uv run --no-dev deng-ingestion gold build
 ```
 
 ## Local Data Reuse
