@@ -320,6 +320,12 @@ To stop the local environment and remove the project containers, networks, and v
 docker compose down --volumes --remove-orphans
 ```
 
+The Container `pipeline` is started manually with the `manual` profile, so the cleanup command needs to specify the same profile to remove the relevant resources:
+
+```bash
+docker compose --profile manual down --volumes --remove-orphans
+```
+
 This removes the main runtime resources created by the local Docker Compose setup.
 
 ### Optional: remove locally built images
