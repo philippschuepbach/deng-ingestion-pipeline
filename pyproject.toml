@@ -1,6 +1,6 @@
 [project]
 name = "geopolitical-risk-ingestion-pipeline"
-version = "0.9.0"
+version = "1.0.0"
 description = "DENG ingestion pipeline with bronze, silver, and gold analytical layers"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
