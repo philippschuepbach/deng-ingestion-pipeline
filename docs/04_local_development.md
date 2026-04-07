@@ -11,24 +11,19 @@ The following tools are expected to be available locally:
 
 ## Environment Setup
 
-Create a local `.env` file in the project root.
+Create a local `.env` file in the project root from the example file:
 
-Example:
-
-```env
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=gdelt
-POSTGRES_USER=root
-POSTGRES_PASSWORD=root
-LOG_LEVEL=INFO
+```bash
+cp .env.example .env
 ````
+
+The example file contains local demo defaults for reproducible development and review.
 
 ### Notes
 
 * When running Python locally outside Docker, `POSTGRES_HOST=localhost` is usually correct.
-* When running the pipeline inside the Docker `pipeline` service, the database host is `pgdatabase`.
-* The local `.env` file is mainly relevant for non-Docker local execution.
+* When running the pipeline inside Docker Compose, the application uses the container-internal database host configured through the Compose environment.
+* The local `.env` file is relevant for both host-side local execution and Docker Compose.
 
 ## Start Local Infrastructure
 
@@ -53,13 +48,13 @@ docker compose up -d pgdatabase pgadmin
 
 ## Python Environment Setup
 
-Install the project dependencies once from the repository root:
+Install the project dependencies for local development from the repository root:
 
 ```bash
-uv sync
+uv sync --group dev
 ```
 
-After that, CLI commands can be run directly with uv run.
+After that, CLI commands can be run directly with `uv run`.
 
 ## Running the Pipeline Locally with uv
 
@@ -237,7 +232,7 @@ docker compose run --rm pipeline uv run --no-dev deng-ingestion gold build
 
 ## Local Data Reuse
 
-Downloaded files are stored under the local `data/` directory and reused across runs.
+When running the pipeline locally on the host, downloaded files are stored under the local `data/` directory and can be reused across runs.
 
 Important locations:
 
@@ -250,7 +245,7 @@ Important locations:
 * `data/raw/`
   Extracted export CSV files
 
-Repeated backfills or reruns therefore do not need to re-download everything if the files already exist locally.
+When running through Docker Compose, the pipeline stores working data in Docker volumes rather than directly in the host repository directory. This keeps the local repository cleaner for reviewers while still allowing data reuse inside the containerized setup.
 
 ## Database Inspection
 
@@ -293,18 +288,22 @@ Use `DEBUG` when troubleshooting local pipeline behavior.
 
 A practical local workflow during development is:
 
-1. start PostgreSQL and pgAdmin
-2. load lookups
-3. run a small manifest backfill window
-4. ingest all pending export batches
-5. transform all pending silver batches
-6. rebuild gold
-7. inspect the results in pgAdmin
+1. copy `.env.example` to `.env`
+2. start PostgreSQL and pgAdmin
+3. install local development dependencies
+4. load lookups
+5. run a small manifest backfill window
+6. ingest all pending export batches
+7. transform all pending silver batches
+8. rebuild gold
+9. inspect the results in pgAdmin
 
 Example:
 
 ```bash
+cp .env.example .env
 docker compose up -d pgdatabase pgadmin
+uv sync --group dev
 uv run deng-ingestion lookups load
 uv run deng-ingestion manifest backfill --days 2
 uv run deng-ingestion export ingest-all
