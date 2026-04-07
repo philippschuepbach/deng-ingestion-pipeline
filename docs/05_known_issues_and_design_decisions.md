@@ -41,11 +41,25 @@ The initial version of the gold-layer instability score was based on weighted ca
 - protest-related events
 - diplomatic-tension-related events
 
-This worked technically, but large countries with consistently high event volume tended to dominate the score.
+This worked technically, but large countries with consistently high event volume tended to dominate the score and remained in an almost permanent alert state.
 
-#### Consequence
+#### Improvement
 
-The current score is usable as a first monitoring signal, but it still favors absolute event volume. A later version should introduce normalization or damping so that unusual activity stands out more clearly.
+The score was revised to use a country-relative baseline approach based on the negative Goldstein intensity of relevant events.
+
+Instead of relying only on absolute event counts, the current implementation:
+
+- aggregates negative Goldstein contributions for relevant events
+- compares the current value against the country's own historical baseline
+- expresses the result as a z-score
+
+This makes the alert signal more sensitive to unusual spikes within a country instead of permanently favoring countries with high baseline event volume.
+
+#### Current limitation
+
+The revised score is more plausible for monitoring and demonstration purposes, but it is still a simplified analytical heuristic.
+
+It is useful for highlighting unusual country-hour windows in the dataset, but it should not be interpreted as a fully validated geopolitical risk metric.
 
 ### 4. Parent-to-subflow input passing in Kestra was unreliable in the local setup
 
@@ -235,7 +249,5 @@ The project moved toward an explicit `PROJECT_ROOT` anchor to make path handling
 
 The next likely improvements are:
 
-- refine the instability score to reduce bias toward high-volume countries
-- improve retry and failure-handling behavior in orchestration
 - extend the current local setup toward the cloud-oriented final project stage
 - evaluate whether selected gold-layer logic should later become incremental
