@@ -1,6 +1,6 @@
 services:
   pgdatabase:
-    image: postgres:18
+    image: postgres:18@sha256:ddbc320a9ad558c01c719248108e607eadde92fea799fec799028cfb2fab7319
     restart: unless-stopped
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
@@ -23,7 +23,7 @@ services:
       - pipeline_net
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4@sha256:ff557f69d9808085dc3554f56c1b06a36ac8cddabe4485212920b9604261abdb
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL}"
@@ -43,7 +43,6 @@ services:
 
   pipeline:
     image: geopolitical-risk-ingestion-pipeline:latest
-    pull_policy: build
     build:
       context: .
       dockerfile: Dockerfile
@@ -72,7 +71,7 @@ services:
       - pipeline_net
 
   kestra_postgres:
-    image: postgres:18
+    image: postgres:17@sha256:28ed727ae9f0f4e0e19e88055e1158c1ac2d5ac35d87bdbe869a9cc99bfe618c
     restart: unless-stopped
     volumes:
       - "kestra_postgres_data:/var/lib/postgresql"
@@ -112,7 +111,14 @@ services:
             driverClassName: org.postgresql.Driver
             username: "${KESTRA_POSTGRES_USER}"
             password: "${KESTRA_POSTGRES_PASSWORD}"
+        endpoints:
+          prometheus:
+            enabled: false
         micronaut:
+          metrics:
+            export:
+              prometheus:
+                enabled: false
           io:
             watch:
               enabled: true
@@ -159,7 +165,7 @@ services:
       - pipeline_net
 
   grafana:
-    image: grafana/grafana-oss
+    image: grafana/grafana-oss@sha256:83749231c3835e390a3144e5e940203e42b9589761f20ef3169c716e734ad505
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER}"

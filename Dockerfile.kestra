@@ -1,8 +1,8 @@
-FROM kestra/kestra:v1.1
+FROM kestra/kestra:v1.1@sha256:d150c8f02e498da814c3296c030e82b5d5ddd475c951078f171802aa25cae76c
 
 USER root
 
-RUN python -m pip install --no-cache-dir uv
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:90bbb3c16635e9627f49eec6539f956d70746c409209041800a0280b93152823 /uv /usr/local/bin/uv
 
 COPY docker/kestra-entrypoint.sh /usr/local/bin/kestra-entrypoint.sh
 RUN chmod +x /usr/local/bin/kestra-entrypoint.sh
