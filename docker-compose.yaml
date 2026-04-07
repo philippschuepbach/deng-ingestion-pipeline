@@ -1,6 +1,7 @@
 services:
   pgdatabase:
     image: postgres:18
+    restart: unless-stopped
     environment:
       POSTGRES_USER: "root"
       POSTGRES_PASSWORD: "root"
@@ -15,11 +16,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 10
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpus: 2.0
     networks:
       - pipeline_net
 
   pgadmin:
     image: dpage/pgadmin4
+    restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: "root@root.ch"
       PGADMIN_DEFAULT_PASSWORD: "root"
@@ -30,6 +35,9 @@ services:
     depends_on:
       pgdatabase:
         condition: service_healthy
+    mem_limit: 2g
+    mem_reservation: 256m
+    cpus: 1.0
     networks:
       - pipeline_net
 
@@ -49,17 +57,22 @@ services:
       UV_LINK_MODE: copy
     volumes:
       - ".:/app"
-      - "/app/.venv"
+      - "pipeline_data:/app/data"
+      - "pipeline_venv:/app/.venv"
     depends_on:
       pgdatabase:
         condition: service_healthy
     profiles:
       - manual
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpus: 2.0
     networks:
       - pipeline_net
 
   kestra_postgres:
     image: postgres:18
+    restart: unless-stopped
     volumes:
       - "kestra_postgres_data:/var/lib/postgresql"
     environment:
@@ -71,6 +84,9 @@ services:
       interval: 30s
       timeout: 10s
       retries: 10
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
     networks:
       - pipeline_net
 
@@ -78,11 +94,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.kestra
+    restart: unless-stopped
     volumes:
       - "kestra_data:/app/storage"
       - "kestra_tmp:/tmp/kestra-wd"
       - "./kestra/flows:/flows"
       - ".:/workspace"
+      - "kestra_workspace_data:/workspace/data"
       - "kestra_workspace_venv:/workspace/.venv"
       - "kestra_uv_cache:/root/.cache/uv"
     environment:
@@ -133,6 +151,30 @@ services:
         condition: service_healthy
       pgdatabase:
         condition: service_healthy
+    mem_limit: 2g
+    mem_reservation: 1g
+    cpus: 2.0
+    networks:
+      - pipeline_net
+
+  grafana:
+    image: grafana/grafana-oss
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - "grafana_data:/var/lib/grafana"
+      - "./grafana/provisioning:/etc/grafana/provisioning:ro"
+      - "./grafana/dashboards:/var/lib/grafana/dashboards:ro"
+    depends_on:
+      pgdatabase:
+        condition: service_healthy
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
     networks:
       - pipeline_net
 
@@ -142,8 +184,12 @@ volumes:
   kestra_postgres_data:
   kestra_data:
   kestra_tmp:
+  kestra_workspace_data:
   kestra_workspace_venv:
   kestra_uv_cache:
+  pipeline_data:
+  pipeline_venv:
+  grafana_data:
 
 networks:
   pipeline_net:

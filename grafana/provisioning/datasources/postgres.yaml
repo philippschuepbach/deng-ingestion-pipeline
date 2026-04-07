@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL
+    uid: postgres-gdelt
+    type: postgres
+    access: proxy
+    url: pgdatabase:5432
+    user: root
+    isDefault: true
+    editable: true
+    secureJsonData:
+      password: root
+    jsonData:
+      database: gdelt
+      sslmode: disable
+      timescaledb: false

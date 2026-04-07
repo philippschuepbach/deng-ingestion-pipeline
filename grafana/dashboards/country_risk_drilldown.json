@@ -1,0 +1,520 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 14,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_window_start AS \"time\",\n  weighted_instability_score\nFROM public.risk_alerts_gold\nWHERE $__timeFilter(time_window_start)\n  AND country_name = '${country}'\nORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Weighted Instability Score Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_window_start AS \"time\",\n  weighted_instability_score\nFROM public.risk_alerts_gold\nWHERE $__timeFilter(time_window_start)\n  AND country_name = '${country}'\nORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Latest Instability Score (${country})",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 3,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_window_start AS \"time\",\n  protest_event_count,\n  conflict_event_count,\n  diplomatic_tension_event_count\nFROM public.risk_alerts_gold\nWHERE $__timeFilter(time_window_start)\n  AND country_name = '${country}'\nORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Event Mix Over Time (${country})",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "time_window_start"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  time_window_start,\n  time_window_end,\n  weighted_instability_score,\n  total_event_count,\n  protest_event_count,\n  conflict_event_count,\n  diplomatic_tension_event_count,\n  avg_goldstein_scale\nFROM public.risk_alerts_gold\nWHERE $__timeFilter(time_window_start)\n  AND country_name = '${country}'\n  AND is_alert = TRUE\nORDER BY time_window_start DESC\nLIMIT 50;",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Alert Windows (${country})",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH latest_alert_window AS (\n  SELECT MAX(time_window_start) AS time_window_start\n  FROM public.risk_alerts_gold\n  WHERE country_name = '${country}'\n    AND is_alert = TRUE\n    AND $__timeFilter(time_window_start)\n), selected_country AS (\n  SELECT country_code\n  FROM public.risk_alerts_gold\n  WHERE country_name = '${country}'\n  ORDER BY time_window_start DESC\n  LIMIT 1\n)\nSELECT\n  es.event_code,\n  ec.event_description,\n  es.event_root_code,\n  er.event_root_description,\n  COUNT(*) AS event_count,\n  ROUND(AVG(es.goldstein_scale)::numeric, 2) AS avg_goldstein,\n  SUM(es.num_mentions) AS total_mentions,\n  SUM(es.num_articles) AS total_articles\nFROM public.events_silver es\nJOIN latest_alert_window lw\n  ON es.event_added_ts >= lw.time_window_start\n AND es.event_added_ts <  lw.time_window_start + INTERVAL '1 hour'\nLEFT JOIN public.dim_cameo_event_codes ec\n  ON ec.event_code = es.event_code\nLEFT JOIN public.dim_cameo_event_roots er\n  ON er.event_root_code = es.event_root_code\nWHERE es.focus_country_code = (SELECT country_code FROM selected_country)\nGROUP BY\n  es.event_code,\n  ec.event_description,\n  es.event_root_code,\n  er.event_root_description\nORDER BY event_count DESC, avg_goldstein ASC\nLIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Event Codes in Latest Alert Window (${country})",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH latest_alert_window AS (\n  SELECT MAX(time_window_start) AS time_window_start\n  FROM public.risk_alerts_gold\n  WHERE country_name = '${country}'\n    AND is_alert = TRUE\n    AND $__timeFilter(time_window_start)\n), selected_country AS (\n  SELECT country_code\n  FROM public.risk_alerts_gold\n  WHERE country_name = '${country}'\n  ORDER BY time_window_start DESC\n  LIMIT 1\n)\nSELECT\n  es.source_url,\n  COUNT(*) AS event_count,\n  SUM(es.num_mentions) AS total_mentions,\n  SUM(es.num_articles) AS total_articles,\n  ROUND(AVG(es.goldstein_scale)::numeric, 2) AS avg_goldstein\nFROM public.events_silver es\nJOIN latest_alert_window lw\n  ON es.event_added_ts >= lw.time_window_start\n AND es.event_added_ts <  lw.time_window_start + INTERVAL '1 hour'\nWHERE es.focus_country_code = (SELECT country_code FROM selected_country)\nGROUP BY es.source_url\nORDER BY event_count DESC, total_mentions DESC\nLIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Source URLs in Latest Alert Window (${country})",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgres-gdelt"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "event_added_ts"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgres-gdelt"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH selected_country AS (\n  SELECT country_code\n  FROM public.risk_alerts_gold\n  WHERE country_name = '${country}'\n  ORDER BY time_window_start DESC\n  LIMIT 1\n)\nSELECT\n  es.event_added_ts,\n  es.global_event_id,\n  es.event_code,\n  ec.event_description,\n  es.event_root_code,\n  er.event_root_description,\n  es.goldstein_scale,\n  es.avg_tone,\n  es.num_mentions,\n  es.num_sources,\n  es.num_articles,\n  es.actor1_name,\n  es.actor1_country_code,\n  cc1.country_name AS actor1_country_name,\n  es.actor1_known_group_code,\n  kg1.known_group_name AS actor1_known_group_name,\n  es.actor2_name,\n  es.actor2_country_code,\n  cc2.country_name AS actor2_country_name,\n  es.actor2_known_group_code,\n  kg2.known_group_name AS actor2_known_group_name,\n  es.focus_location_name,\n  es.source_url,\n  es.is_protest_related,\n  es.is_conflict_related,\n  es.is_diplomatic_tension_related\nFROM public.events_silver es\nLEFT JOIN public.dim_cameo_event_codes ec\n  ON ec.event_code = es.event_code\nLEFT JOIN public.dim_cameo_event_roots er\n  ON er.event_root_code = es.event_root_code\nLEFT JOIN public.dim_cameo_country_codes cc1\n  ON cc1.country_code = es.actor1_country_code\nLEFT JOIN public.dim_cameo_country_codes cc2\n  ON cc2.country_code = es.actor2_country_code\nLEFT JOIN public.dim_cameo_known_groups kg1\n  ON kg1.known_group_code = es.actor1_known_group_code\nLEFT JOIN public.dim_cameo_known_groups kg2\n  ON kg2.known_group_code = es.actor2_known_group_code\nWHERE $__timeFilter(es.event_added_ts)\n  AND es.focus_country_code = (SELECT country_code FROM selected_country)\n  AND (\n    es.is_protest_related\n    OR es.is_conflict_related\n    OR es.is_diplomatic_tension_related\n  )\nORDER BY es.event_added_ts DESC\nLIMIT 100;",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Relevant Events Table (${country})",
+      "type": "table"
+    }
+  ],
+  "refresh": "5m",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "geopolitical-risk",
+    "postgresql",
+    "country-drilldown"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Turkey",
+          "value": "Turkey"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "postgres-gdelt"
+        },
+        "definition": "SELECT DISTINCT country_name FROM public.risk_alerts_gold ORDER BY 1;",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Country",
+        "multi": false,
+        "name": "country",
+        "options": [],
+        "query": "SELECT DISTINCT country_name FROM public.risk_alerts_gold ORDER BY 1;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Country Risk Drilldown",
+  "uid": "country-risk-drilldown-v2",
+  "version": 1,
+  "weekStart": ""
+}
