@@ -17,5 +17,6 @@ tasks:
 triggers:
   - id: every_15_minutes
     type: io.kestra.plugin.core.trigger.Schedule
+    disabled: true
     cron: "*/15 * * * *"
     timezone: Europe/Zurich
