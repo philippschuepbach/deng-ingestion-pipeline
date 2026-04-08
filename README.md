@@ -80,6 +80,11 @@ The most important variables are:
 
 ## 2. Quickstart - Local Pipeline and Reproducible Environment
 
+> [!NOTE]
+> Before you start, make sure that you've cleaned up any previous local Docker resources to avoid conflicts
+
+```bash
+
 Create the environment file from the example file:
 
 ```bash
@@ -205,7 +210,8 @@ SELECT
     claimed_at,
     claimed_by
 FROM pipeline_batches
-ORDER BY batch_id;
+ORDER BY batch_id
+LIMIT 1000;
 ```
 
 Expected result:
