@@ -32,6 +32,12 @@ services:
       - "pgadmin_data:/var/lib/pgadmin"
     ports:
       - "8085:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/misc/ping >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     depends_on:
       pgdatabase:
         condition: service_healthy
@@ -153,6 +159,12 @@ services:
     ports:
       - "8080:8080"
       - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/health | grep -q '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     depends_on:
       kestra_postgres:
         condition: service_healthy
@@ -172,6 +184,12 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     volumes:
       - "grafana_data:/var/lib/grafana"
       - "./grafana/provisioning:/etc/grafana/provisioning:ro"
