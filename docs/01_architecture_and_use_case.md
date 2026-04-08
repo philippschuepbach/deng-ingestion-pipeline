@@ -34,43 +34,19 @@ The gold layer uses a country-relative instability score based on the negative G
 
 First, the pipeline computes the negative Goldstein sum for a country and time window:
 
-$$
-N_{c,t}
-=
-\sum_{e \in E_{c,t}^{\mathrm{rel}}} \max(-g(e), 0)
-$$
+$$N_{c,t}=\sum_{e \in E_{c,t}^{\mathrm{rel}}} \max(-(e), 0)$$
 
 Then it compares this value to the historical baseline of the same country using a z-score:
 
-$$
-W_{c,t}
-=
-\frac{
-N_{c,t} - \mu_{c,t}
-}{
-\max(\sigma_{c,t}, 1.0)
-}
-$$
+$$W_{c,t}=\frac{N_{c,t} - \mu_{c,t}}{\max(\sigma_{c,t}, 1.0)}$$
 
 Where:
 
-$$
-c=\text{country},\quad
-t=\text{time window},\quad
-e=\text{single event},\quad
-E_{c,t}^{\mathrm{rel}}=\text{set of relevant events}
-$$
+$$c=\text{country},\quad t=\text{time window},\quad e=\text{single event},\quad E_{c,t}^{\mathrm{rel}}=\text{set of relevant events}$$
 
-$$
-g(e)=\text{Goldstein score of event } e,\quad
-N_{c,t}=\text{negative Goldstein sum},\quad
-W_{c,t}=\text{instability z-score}
-$$
+$$g(e)=\text{Goldstein score of event } e,\quad N_{c,t}=\text{negative Goldstein sum},\quad W_{c,t}=\text{instability z-score}$$
 
-$$
-\mu_{c,t}=\text{historical mean of } N_{c,t}\text{ for country } c,\quad
-\sigma_{c,t}=\text{historical standard deviation of } N_{c,t}\text{ for country } c
-$$
+$$\mu_{c,t}=\text{historical mean of } N_{c,t}\text{ for country } c,\quad \sigma_{c,t}=\text{historical standard deviation of } N_{c,t}\text{ for country } c$$
 
 This means the score does not measure absolute event volume. Instead, it measures how unusual the current negative event intensity is for a country compared to its own historical baseline.
 
