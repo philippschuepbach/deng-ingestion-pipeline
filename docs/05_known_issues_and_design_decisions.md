@@ -61,33 +61,7 @@ The revised score is more plausible for monitoring and demonstration purposes, b
 
 It is useful for highlighting unusual country-hour windows in the dataset, but it should not be interpreted as a fully validated geopolitical risk metric.
 
-### 4. Parent-to-subflow input passing in Kestra was unreliable in the local setup
-
-Passing inputs from a parent flow to a subflow was unreliable in the local Kestra setup.
-
-The affected case was the parameterized `manifest_sync` subflow, which expected:
-
-- `years`
-- `months`
-- `days`
-
-When the subflow was started directly, the inputs worked. When triggered from the parent flow, Kestra sometimes treated the inputs as undeclared and fell back to default values.
-
-#### Consequence
-
-This created a mismatch between the intended orchestration logic and the actual runtime behavior:
-
-- manual backfill parameters were not always propagated correctly
-- the subflow could fall back to incremental behavior even when a backfill window had been provided
-- the execution path became harder to reason about and validate
-
-#### Current handling
-
-For the current project stage, this is treated as a tooling limitation of the local Kestra setup rather than a pipeline logic bug.
-
-As a workaround, the manifest step is executed directly in the parent flow instead of being called as a parameterized subflow. This keeps the runtime behavior predictable.
-
-### 5. Malformed numeric values in source export files
+### 4. Malformed numeric values in source export files
 
 Not all GDELT export files are perfectly clean from a strict database-loading perspective.
 
@@ -112,7 +86,7 @@ The bronze ingestion process was made more defensive:
 
 This keeps the pipeline running while still making the data quality issue visible.
 
-### 6. Large historical backfills are stable but slow in the current local setup
+### 5. Large historical backfills are stable but slow in the current local setup
 
 | Kestra | PostgreSQL |
 |---|---|
@@ -135,7 +109,7 @@ For review and local validation, smaller windows such as incremental runs or `da
 
 A practical next step is to add a batch limit or chunked execution mode for large backfills.
 
-### 7. Kestra UI inconsistency for disabled schedule triggers
+### 6. Kestra UI inconsistency for disabled schedule triggers
 
 A disabled schedule trigger may still appear in the **Next Executions** view in the Kestra UI.
 
