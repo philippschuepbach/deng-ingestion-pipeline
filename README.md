@@ -104,6 +104,8 @@ docker compose --profile manual build
 docker compose up -d
 ```
 
+It takes around 30 seconds for all services to start and become healthy.
+
 ### 2.1 Check that the services started successfully
 
 After starting the stack, verify that the containers are up:
