@@ -77,7 +77,7 @@ services:
       - pipeline_net
 
   kestra_postgres:
-    image: postgres:17@sha256:28ed727ae9f0f4e0e19e88055e1158c1ac2d5ac35d87bdbe869a9cc99bfe618c
+    image: postgres:18@sha256:ddbc320a9ad558c01c719248108e607eadde92fea799fec799028cfb2fab7319
     restart: unless-stopped
     volumes:
       - "kestra_postgres_data:/var/lib/postgresql"
