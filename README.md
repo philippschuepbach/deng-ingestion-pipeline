@@ -83,7 +83,6 @@ The most important variables are:
 > [!NOTE]
 > Before you start, make sure that you've cleaned up any previous local Docker resources to avoid conflicts
 
-```bash
 
 Create the environment file from the example file:
 
