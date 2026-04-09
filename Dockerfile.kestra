@@ -1,4 +1,4 @@
-FROM kestra/kestra:v1.3@sha256:8f780985c391fb6d1627ef23fefb5fdf36865498e84b9718b3f34139259a7a1e
+FROM kestra/kestra:v1.1@sha256:d150c8f02e498da814c3296c030e82b5d5ddd475c951078f171802aa25cae76c
 
 USER root
 
