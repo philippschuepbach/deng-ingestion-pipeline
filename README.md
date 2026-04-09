@@ -40,6 +40,18 @@ Additional project documentation is available in the `docs/` directory:
 
 ### 1.2 Prerequisites
 
+Clone this repository to your local machine:
+
+```bash
+git clone https://github.com/philippschuepbach/deng-ingestion-pipeline.git
+```
+
+And switch into the project directory:
+
+```bash
+cd deng-ingestion-pipeline
+```
+
 #### Docker-based quickstart
 - [Docker](https://www.docker.com/get-started) installed and running on your machine
 
