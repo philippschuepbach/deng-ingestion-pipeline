@@ -187,7 +187,7 @@ The backfill window is controlled through relative time parameters such as:
 Example:
 
 ```bash
-docker compose --profile manual run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
+docker compose --profile manual run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 1
 ```
 
 This processes a small historical backfill window of the last 2 days before continuing with the downstream pipeline.
@@ -230,7 +230,8 @@ SELECT
     COUNT(*) AS bronze_rows
 FROM events_bronze
 GROUP BY batch_id
-ORDER BY batch_id;
+ORDER BY batch_id
+LIMIT 1000;
 ```
 
 Expected result:
@@ -245,7 +246,8 @@ SELECT
     COUNT(*) AS silver_rows
 FROM events_silver
 GROUP BY batch_id
-ORDER BY batch_id;
+ORDER BY batch_id
+§LIMIT 1000;
 ```
 
 Expected result:
