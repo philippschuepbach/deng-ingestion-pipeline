@@ -340,6 +340,12 @@ A disabled scheduled trigger may still appear in the Kestra UI under "Next Execu
 To stop the local environment and remove the project containers, networks, and volumes, run:
 
 ```bash
+docker compose --volumes --remove-orphans
+```
+
+If you used the Pipeline container (`docker compose --profile manual run --rm pipeline...`), you need to specify the `manual` profile to remove the containers created with that profile:
+
+```bash
 docker compose --profile manual down --volumes --remove-orphans
 ```
 
