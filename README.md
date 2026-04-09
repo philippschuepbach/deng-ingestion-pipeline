@@ -259,7 +259,7 @@ SELECT
 FROM events_silver
 GROUP BY batch_id
 ORDER BY batch_id
-§LIMIT 1000;
+LIMIT 1000;
 ```
 
 Expected result:
