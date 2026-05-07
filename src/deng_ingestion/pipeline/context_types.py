@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TypedDict
 
 
-class BatchInfo(TypedDict):
+class BatchInfo(TypedDict, total=False):
     batch_id: int
     source_type: str
     file_type: str
@@ -15,6 +15,9 @@ class BatchInfo(TypedDict):
     status: str
     claimed_at: datetime | None
     claimed_by: str | None
+    archive_object_path: str | None
+    csv_object_path: str | None
+    uploaded_at: datetime | None
 
 
 class SilverBatchInfo(TypedDict):

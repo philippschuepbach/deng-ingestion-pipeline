@@ -7,7 +7,9 @@ from psycopg2.extensions import connection as PgConnection
 
 from deng_ingestion.pipeline.context import PipelineContext
 from deng_ingestion.pipeline.context_keys import (
+    ARCHIVE_OBJECT_PATH,
     ARCHIVE_PATH,
+    CSV_OBJECT_PATH,
     CURRENT_BATCH,
     CURRENT_SILVER_BATCH,
     DB_CONNECTION,
@@ -19,6 +21,7 @@ from deng_ingestion.pipeline.context_keys import (
     LAST_SILVER_INSERTED_ROWS,
     LOADED_LOOKUP_COUNTS,
     LOOKUP_DIR,
+    LOOKUP_OBJECT_PATHS,
     MANIFEST_ENTRIES,
     MANIFEST_SOURCE_TYPE,
     MANIFEST_TEXT,
@@ -30,6 +33,8 @@ from deng_ingestion.pipeline.context_keys import (
     REUSED_LOOKUP_FILES,
     SEEDED_RISK_CATEGORY_MAPPING_COUNT,
     TRANSFORMED_EXPORT_BATCH_IDS,
+    UPLOADED_EXPORT_BATCH_IDS,
+    UPLOADED_LOOKUP_OBJECT_PATHS,
 )
 from deng_ingestion.pipeline.context_types import (
     BatchIdList,
@@ -312,3 +317,70 @@ def set_db_connection(context: PipelineContext, value: PgConnection) -> None:
 
 def clear_db_connection(context: PipelineContext) -> None:
     context.data.pop(DB_CONNECTION, None)
+
+
+def get_archive_object_path(context: PipelineContext) -> str | None:
+    value = context.data.get(ARCHIVE_OBJECT_PATH)
+    if value is None:
+        return None
+    return cast(str, value)
+
+
+def set_archive_object_path(context: PipelineContext, value: str) -> None:
+    context.data[ARCHIVE_OBJECT_PATH] = value
+
+
+def clear_archive_object_path(context: PipelineContext) -> None:
+    context.data.pop(ARCHIVE_OBJECT_PATH, None)
+
+
+def get_csv_object_path(context: PipelineContext) -> str | None:
+    value = context.data.get(CSV_OBJECT_PATH)
+    if value is None:
+        return None
+    return cast(str, value)
+
+
+def set_csv_object_path(context: PipelineContext, value: str) -> None:
+    context.data[CSV_OBJECT_PATH] = value
+
+
+def clear_csv_object_path(context: PipelineContext) -> None:
+    context.data.pop(CSV_OBJECT_PATH, None)
+
+
+def get_uploaded_export_batch_ids(context: PipelineContext) -> BatchIdList:
+    value = context.data.get(UPLOADED_EXPORT_BATCH_IDS, [])
+    return cast(BatchIdList, value)
+
+
+def set_uploaded_export_batch_ids(context: PipelineContext, value: BatchIdList) -> None:
+    context.data[UPLOADED_EXPORT_BATCH_IDS] = value
+
+
+def get_lookup_object_paths(context: PipelineContext) -> dict[str, str]:
+    value = context.data.get(LOOKUP_OBJECT_PATHS, {})
+    return cast(dict[str, str], value)
+
+
+def set_lookup_object_paths(context: PipelineContext, value: dict[str, str]) -> None:
+    context.data[LOOKUP_OBJECT_PATHS] = value
+
+
+def clear_lookup_object_paths(context: PipelineContext) -> None:
+    context.data.pop(LOOKUP_OBJECT_PATHS, None)
+
+
+def get_uploaded_lookup_object_paths(context: PipelineContext) -> dict[str, str]:
+    value = context.data.get(UPLOADED_LOOKUP_OBJECT_PATHS, {})
+    return cast(dict[str, str], value)
+
+
+def set_uploaded_lookup_object_paths(
+    context: PipelineContext, value: dict[str, str]
+) -> None:
+    context.data[UPLOADED_LOOKUP_OBJECT_PATHS] = value
+
+
+def clear_uploaded_lookup_object_paths(context: PipelineContext) -> None:
+    context.data.pop(UPLOADED_LOOKUP_OBJECT_PATHS, None)
