@@ -12,9 +12,12 @@ CREATE TABLE pipeline_batches (
     gdelt_timestamp TIMESTAMP NOT NULL,
     discovered_at TIMESTAMP NOT NULL DEFAULT NOW(),
     downloaded_at TIMESTAMP,
+    uploaded_at TIMESTAMP,
     loaded_at TIMESTAMP,
     claimed_at TIMESTAMPTZ,
     claimed_by TEXT,
+    archive_object_path TEXT,
+    csv_object_path TEXT,
     status pipeline_batch_status NOT NULL DEFAULT 'discovered',
     error_message TEXT
 );
