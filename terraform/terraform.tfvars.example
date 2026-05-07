@@ -1,0 +1,4 @@
+project_id      = "gdelt-live-ingestion-489312"
+region          = "EU"
+gcs_bucket_name = "gdelt-pipeline"
+bq_dataset_name = "gdelt_pipeline_dataset"
