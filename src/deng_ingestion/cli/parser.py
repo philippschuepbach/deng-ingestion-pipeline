@@ -10,6 +10,7 @@ from deng_ingestion.cli.parsers.manifest import add_manifest_parser
 from deng_ingestion.cli.parsers.pipeline import add_pipeline_parser
 from deng_ingestion.cli.parsers.quickstart import add_quickstart_parser
 from deng_ingestion.cli.parsers.silver import add_silver_parser
+from deng_ingestion.cli.parsers.warehouse import add_warehouse_parser
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -28,5 +29,6 @@ def build_parser() -> argparse.ArgumentParser:
     add_pipeline_parser(subparsers)
     add_quickstart_parser(subparsers)
     add_datalake_parser(subparsers)
+    add_warehouse_parser(subparsers)
 
     return parser

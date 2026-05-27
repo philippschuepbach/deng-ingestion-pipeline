@@ -19,6 +19,7 @@ from .manifest import handle_manifest_backfill, handle_manifest_incremental
 from .pipeline import handle_pipeline_incremental
 from .quickstart import handle_quickstart
 from .silver import handle_silver_transform, handle_silver_transform_all
+from .warehouse import handle_warehouse_build_events_silver
 
 
 def dispatch(args: Namespace) -> None:
@@ -89,6 +90,11 @@ def dispatch(args: Namespace) -> None:
             handle_datalake_export_ingest_current_run(args)
             return
 
+    if args.command == "warehouse":
+        if args.warehouse_command == "build-events-silver":
+            handle_warehouse_build_events_silver(args)
+            return
+
     raise ValueError(
         "Unsupported CLI command combination: "
         f"command={args.command}, "
@@ -99,4 +105,5 @@ def dispatch(args: Namespace) -> None:
         f"gold_command={getattr(args, 'gold_command', None)}, "
         f"pipeline_command={getattr(args, 'pipeline_command', None)}, "
         f"datalake_command={getattr(args, 'datalake_command', None)}, "
+        f"warehouse_command={getattr(args, 'warehouse_command', None)}, "
     )

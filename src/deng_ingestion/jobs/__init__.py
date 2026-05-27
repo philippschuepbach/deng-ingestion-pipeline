@@ -1,3 +1,4 @@
+from .build_events_silver_warehouse import build_events_silver_warehouse_job
 from .build_risk_alerts_gold import build_risk_alerts_gold_job
 from .ingest_datalake_direct import (
     build_backfill_datalake_direct_job,
@@ -40,4 +41,5 @@ __all__ = [
     "build_transform_registered_events_job",
     "build_backfill_datalake_direct_job",
     "build_incremental_datalake_direct_job",
+    "build_events_silver_warehouse_job",
 ]
