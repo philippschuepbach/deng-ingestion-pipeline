@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 
+from deng_ingestion.cli.parsers.datalake import add_datalake_parser
 from deng_ingestion.cli.parsers.export import add_export_parser
 from deng_ingestion.cli.parsers.gold import add_gold_parser
 from deng_ingestion.cli.parsers.lookups import add_lookups_parser
@@ -26,5 +27,6 @@ def build_parser() -> argparse.ArgumentParser:
     add_gold_parser(subparsers)
     add_pipeline_parser(subparsers)
     add_quickstart_parser(subparsers)
+    add_datalake_parser(subparsers)
 
     return parser

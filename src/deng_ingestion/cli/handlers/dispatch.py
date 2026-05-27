@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from argparse import Namespace
 
+from .datalake import (
+    handle_datalake_export_ingest_current_run,
+    handle_datalake_lookups_ingest,
+)
 from .export import (
     handle_export_ingest,
     handle_export_ingest_all,
@@ -66,6 +70,15 @@ def dispatch(args: Namespace) -> None:
         handle_quickstart(args)
         return
 
+    if args.command == "datalake":
+        if args.datalake_command == "lookups-ingest":
+            handle_datalake_lookups_ingest(args)
+            return
+
+        if args.datalake_command == "export-ingest-current-run":
+            handle_datalake_export_ingest_current_run(args)
+            return
+
     raise ValueError(
         "Unsupported CLI command combination: "
         f"command={args.command}, "
@@ -74,5 +87,6 @@ def dispatch(args: Namespace) -> None:
         f"lookups_command={getattr(args, 'lookups_command', None)}, "
         f"silver_command={getattr(args, 'silver_command', None)}, "
         f"gold_command={getattr(args, 'gold_command', None)}, "
-        f"pipeline_command={getattr(args, 'pipeline_command', None)}"
+        f"pipeline_command={getattr(args, 'pipeline_command', None)}, "
+        f"datalake_command={getattr(args, 'datalake_command', None)}, "
     )

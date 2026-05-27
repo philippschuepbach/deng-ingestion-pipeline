@@ -1,9 +1,13 @@
 from .build_risk_alerts_gold import build_risk_alerts_gold_job
+from .ingest_export_batches_to_datalake import (
+    build_ingest_registered_export_batches_to_datalake_job,
+)
 from .ingest_export_events import (
     build_ingest_all_export_events_job,
     build_ingest_export_events_job,
     build_ingest_registered_export_events_job,
 )
+from .ingest_lookup_files_to_datalake import build_ingest_lookup_files_to_datalake_job
 from .ingest_manifest import (
     build_backfill_manifest_job,
     build_incremental_manifest_job,
@@ -21,6 +25,8 @@ __all__ = [
     "build_ingest_all_export_events_job",
     "build_ingest_export_events_job",
     "build_ingest_registered_export_events_job",
+    "build_ingest_registered_export_batches_to_datalake_job",
+    "build_ingest_lookup_files_to_datalake_job",
     "build_backfill_manifest_job",
     "build_incremental_manifest_job",
     "build_load_lookups_job",

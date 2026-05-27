@@ -112,3 +112,9 @@ class IngestExportBatchesToDatalakeJob:
                 clear_current_batch(context)
 
         clear_remaining_registered_export_batch_ids(context)
+
+
+def build_ingest_registered_export_batches_to_datalake_job() -> (
+    IngestExportBatchesToDatalakeJob
+):
+    return IngestExportBatchesToDatalakeJob()

@@ -8,16 +8,14 @@ terraform {
 }
 
 provider "google" {
-  credentials = file("../keys/my-greds.json")
-  project     = "gdelt-live-ingestion-489312"
-  region      = "eu"
+  project = var.project
+  region  = var.region
 }
 
-resource "google_storage_bucket" "demo-bucket" {
-  name          = "gdelt-pipeline"
-  location      = "eu"
+resource "google_storage_bucket" "datalake" {
+  name          = var.gcs_bucket_name
+  location      = var.location
   force_destroy = true
-
 
   lifecycle_rule {
     condition {
@@ -29,9 +27,7 @@ resource "google_storage_bucket" "demo-bucket" {
   }
 }
 
-
-
-resource "google_bigquery_dataset" "demo_dataset" {
-  dataset_id = "gdelt_pipeline_dataset"
-  location   = "eu"
+resource "google_bigquery_dataset" "warehouse" {
+  dataset_id = var.bq_dataset_name
+  location   = var.location
 }
