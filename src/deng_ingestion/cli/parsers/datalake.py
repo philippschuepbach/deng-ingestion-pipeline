@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from argparse import _SubParsersAction
 
+from deng_ingestion.cli.parsers.common import add_relative_time_args
+
 
 def add_datalake_parser(subparsers: _SubParsersAction) -> None:
     datalake_parser = subparsers.add_parser(
@@ -28,3 +30,14 @@ def add_datalake_parser(subparsers: _SubParsersAction) -> None:
             "registered in the current pipeline context"
         ),
     )
+
+    datalake_subparsers.add_parser(
+        "incremental",
+        help="Run the cloud-native incremental data lake ingestion pipeline",
+    )
+
+    backfill_parser = datalake_subparsers.add_parser(
+        "backfill",
+        help="Run the cloud-native data lake ingestion pipeline with a backfill window",
+    )
+    add_relative_time_args(backfill_parser)

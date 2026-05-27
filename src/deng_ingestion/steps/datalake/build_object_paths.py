@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 from loguru import logger
 
@@ -115,3 +116,21 @@ class BuildLookupObjectPathsStep:
             lookup_dir,
             len(lookup_object_paths),
         )
+
+
+def build_export_archive_object_path(file_name: str, gdelt_timestamp: datetime) -> str:
+    return _build_export_archive_object_path(
+        file_name=file_name,
+        year=gdelt_timestamp.year,
+        month=gdelt_timestamp.month,
+        day=gdelt_timestamp.day,
+    )
+
+
+def build_export_csv_object_path(file_name: str, gdelt_timestamp: datetime) -> str:
+    return _build_export_csv_object_path(
+        file_name=file_name,
+        year=gdelt_timestamp.year,
+        month=gdelt_timestamp.month,
+        day=gdelt_timestamp.day,
+    )

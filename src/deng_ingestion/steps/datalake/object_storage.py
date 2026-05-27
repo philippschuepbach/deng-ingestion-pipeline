@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-import boto3  # type: ignore[import-untyped]
 from dotenv import load_dotenv
+from google.cloud import storage  # type: ignore[import-untyped]
 from loguru import logger
 
 from deng_ingestion.core.paths import PROJECT_ROOT
@@ -17,10 +17,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 @dataclass(frozen=True)
 class ObjectStorageConfig:
     bucket: str
-    endpoint_url: str | None
-    region: str
-    access_key: str
-    secret_key: str
+    project: str | None = None
 
 
 def _get_env(*names: str, default: str | None = None, required: bool = False) -> str:
@@ -42,56 +39,36 @@ def _get_env(*names: str, default: str | None = None, required: bool = False) ->
 
 
 def load_object_storage_config() -> ObjectStorageConfig:
-    endpoint_url = _get_env(
-        "OBJECT_STORAGE_ENDPOINT_URL",
-        "S3_ENDPOINT_URL",
+    project = _get_env(
+        "GOOGLE_CLOUD_PROJECT",
+        "GCLOUD_PROJECT",
         default="",
     )
 
     return ObjectStorageConfig(
         bucket=_get_env(
             "OBJECT_STORAGE_BUCKET",
-            "S3_BUCKET",
+            "GCS_BUCKET",
             required=True,
         ),
-        endpoint_url=endpoint_url if endpoint_url else None,
-        region=_get_env(
-            "OBJECT_STORAGE_REGION",
-            "AWS_DEFAULT_REGION",
-            "AWS_REGION",
-            default="eu-central-1",
-        ),
-        access_key=_get_env(
-            "OBJECT_STORAGE_ACCESS_KEY",
-            "AWS_ACCESS_KEY_ID",
-            required=True,
-        ),
-        secret_key=_get_env(
-            "OBJECT_STORAGE_SECRET_KEY",
-            "AWS_SECRET_ACCESS_KEY",
-            required=True,
-        ),
+        project=project if project else None,
     )
 
 
 @lru_cache(maxsize=1)
-def _create_s3_client():
+def _create_storage_client() -> storage.Client:
     config = load_object_storage_config()
 
     logger.debug(
-        "Creating object storage client: endpoint_url={}, region={}, bucket={}",
-        config.endpoint_url,
-        config.region,
+        "Creating Google Cloud Storage client: project={}, bucket={}",
+        config.project,
         config.bucket,
     )
 
-    return boto3.client(
-        "s3",
-        endpoint_url=config.endpoint_url,
-        region_name=config.region,
-        aws_access_key_id=config.access_key,
-        aws_secret_access_key=config.secret_key,
-    )
+    if config.project is not None:
+        return storage.Client(project=config.project)
+
+    return storage.Client()
 
 
 def get_bucket_name() -> str:
@@ -112,21 +89,43 @@ def upload_file(local_path: Path, object_path: str) -> None:
     bucket_name = get_bucket_name()
 
     logger.debug(
-        "Uploading file to object storage: local_path={}, bucket={}, object_path={}",
+        "Uploading file to Google Cloud Storage: "
+        "local_path={}, bucket={}, object_path={}",
         local_path,
         bucket_name,
         normalized_object_path,
     )
 
-    client = _create_s3_client()
-    client.upload_file(
-        Filename=str(local_path),
-        Bucket=bucket_name,
-        Key=normalized_object_path,
-    )
+    client = _create_storage_client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(normalized_object_path)
+
+    blob.upload_from_filename(str(local_path))
 
     logger.debug(
-        "Finished upload to object storage: bucket={}, object_path={}",
+        "Finished upload to Google Cloud Storage: bucket={}, object_path={}",
         bucket_name,
         normalized_object_path,
     )
+
+
+def object_exists(object_path: str) -> bool:
+    normalized_object_path = object_path.lstrip("/")
+    if not normalized_object_path:
+        raise ValueError("Expected non-empty object_path for existence check")
+
+    bucket_name = get_bucket_name()
+    client = _create_storage_client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(normalized_object_path)
+
+    exists = blob.exists(client=client)
+
+    logger.debug(
+        "Checked object existence: bucket={}, object_path={}, exists={}",
+        bucket_name,
+        normalized_object_path,
+        exists,
+    )
+
+    return bool(exists)

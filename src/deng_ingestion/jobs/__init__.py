@@ -1,4 +1,8 @@
 from .build_risk_alerts_gold import build_risk_alerts_gold_job
+from .ingest_datalake_direct import (
+    build_backfill_datalake_direct_job,
+    build_incremental_datalake_direct_job,
+)
 from .ingest_export_batches_to_datalake import (
     build_ingest_registered_export_batches_to_datalake_job,
 )
@@ -34,4 +38,6 @@ __all__ = [
     "build_transform_all_events_job",
     "build_transform_events_job",
     "build_transform_registered_events_job",
+    "build_backfill_datalake_direct_job",
+    "build_incremental_datalake_direct_job",
 ]

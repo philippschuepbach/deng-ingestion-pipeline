@@ -3,7 +3,9 @@ from __future__ import annotations
 from argparse import Namespace
 
 from .datalake import (
+    handle_datalake_backfill,
     handle_datalake_export_ingest_current_run,
+    handle_datalake_incremental,
     handle_datalake_lookups_ingest,
 )
 from .export import (
@@ -71,6 +73,14 @@ def dispatch(args: Namespace) -> None:
         return
 
     if args.command == "datalake":
+        if args.datalake_command == "incremental":
+            handle_datalake_incremental(args)
+            return
+
+        if args.datalake_command == "backfill":
+            handle_datalake_backfill(args)
+            return
+
         if args.datalake_command == "lookups-ingest":
             handle_datalake_lookups_ingest(args)
             return

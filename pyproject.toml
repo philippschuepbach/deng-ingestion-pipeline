@@ -12,7 +12,7 @@ classifiers = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "boto3>=1.43.5",
+    "google-cloud-storage>=3.10.1",
     "loguru>=0.7.3",
     "psycopg2-binary>=2.9.11",
     "python-dateutil>=2.9.0",
