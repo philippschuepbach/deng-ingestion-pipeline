@@ -19,7 +19,10 @@ from .manifest import handle_manifest_backfill, handle_manifest_incremental
 from .pipeline import handle_pipeline_incremental
 from .quickstart import handle_quickstart
 from .silver import handle_silver_transform, handle_silver_transform_all
-from .warehouse import handle_warehouse_build_events_silver
+from .warehouse import (
+    handle_warehouse_build_events_silver,
+    handle_warehouse_build_risk_alerts_gold,
+)
 
 
 def dispatch(args: Namespace) -> None:
@@ -93,6 +96,10 @@ def dispatch(args: Namespace) -> None:
     if args.command == "warehouse":
         if args.warehouse_command == "build-events-silver":
             handle_warehouse_build_events_silver(args)
+            return
+
+        if args.warehouse_command == "build-risk-alerts-gold":
+            handle_warehouse_build_risk_alerts_gold(args)
             return
 
     raise ValueError(

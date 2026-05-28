@@ -22,7 +22,9 @@ class BigQueryConfig:
     bucket: str
     bronze_prefix: str = "bronze/gdelt/export/events/"
     external_table: str = "events_bronze_external"
+    fips_country_external_table: str = "dim_fips_country_codes_external"
     silver_table: str = "events_silver"
+    gold_table: str = "risk_alerts_gold"
 
 
 def _get_env(*names: str, default: str | None = None, required: bool = False) -> str:

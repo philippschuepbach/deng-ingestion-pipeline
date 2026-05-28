@@ -90,6 +90,22 @@ def test_export_requires_subcommand() -> None:
 
 
 @pytest.mark.parametrize(
+    "warehouse_command",
+    [
+        "build-events-silver",
+        "build-risk-alerts-gold",
+    ],
+)
+def test_warehouse_commands_parse(warehouse_command: str) -> None:
+    parser = build_parser()
+
+    args = parser.parse_args(["warehouse", warehouse_command])
+
+    assert args.command == "warehouse"
+    assert args.warehouse_command == warehouse_command
+
+
+@pytest.mark.parametrize(
     ("argv", "expected_command", "expected_subcommand_attr", "expected_subcommand"),
     [
         (["pipeline", "incremental"], "pipeline", "pipeline_command", "incremental"),
