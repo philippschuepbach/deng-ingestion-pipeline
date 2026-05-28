@@ -54,6 +54,12 @@ The namespace structure separates:
 * **`pipeline_run_scheduled`**
   Scheduled parent flow for recurring incremental runs
 
+* **`cloud_pipeline_run_manual`**
+  Manual parent flow for the final cloud pipeline. It ingests GDELT export data into Google Cloud Storage, builds the BigQuery silver layer, and rebuilds the BigQuery gold monitoring output.
+
+* **`cloud_pipeline_run_scheduled`**
+  Scheduled parent flow for recurring cloud pipeline runs. The schedule is disabled by default to avoid unintended cloud executions during local development and review.
+
 ### Subflows
 
 * **`load_lookups`**
@@ -61,6 +67,9 @@ The namespace structure separates:
 * **`export_ingest_all`**
 * **`silver_transform_all`**
 * **`gold_build`**
+* **`cloud_datalake_ingest`**
+* **`cloud_events_silver_build`**
+* **`cloud_risk_alerts_gold_build`**
 
 ## Current Execution Model
 
@@ -89,3 +98,26 @@ This makes the manual flow suitable for testing, demonstrations, and controlled 
 ## Scheduled Pipeline Execution
 
 The scheduled parent flow is intended for recurring local batch execution. It keeps the analytical layers refreshed with new data.
+
+## Cloud Pipeline Execution
+
+The cloud-oriented final pipeline is exposed through:
+
+* **Namespace:** `hslu.geopolitical_risk.main`
+* **Manual flow:** `cloud_pipeline_run_manual`
+* **Scheduled flow:** `cloud_pipeline_run_scheduled`
+
+The manual cloud flow accepts the same relative backfill inputs as the local manual flow:
+
+* `years`
+* `months`
+* `days`
+
+If all values are `0`, it runs the incremental cloud data lake ingestion path. If any value is greater than `0`, it runs the cloud data lake backfill path before building the BigQuery silver and gold outputs.
+
+The cloud flows expect the Google Cloud settings in `.env`, including:
+
+* `GOOGLE_APPLICATION_CREDENTIALS`
+* `GOOGLE_CLOUD_PROJECT`
+* `OBJECT_STORAGE_BUCKET`
+* `BIGQUERY_DATASET`
