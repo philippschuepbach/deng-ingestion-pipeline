@@ -15,6 +15,7 @@ provider "google" {
 resource "google_storage_bucket" "datalake" {
   name          = var.gcs_bucket_name
   location      = var.location
+  storage_class = var.gcs_storage_class
   force_destroy = true
 
   lifecycle_rule {
@@ -28,6 +29,7 @@ resource "google_storage_bucket" "datalake" {
 }
 
 resource "google_bigquery_dataset" "warehouse" {
-  dataset_id = var.bq_dataset_name
-  location   = var.location
+  dataset_id                 = var.bq_dataset_name
+  location                   = var.location
+  delete_contents_on_destroy = true
 }
