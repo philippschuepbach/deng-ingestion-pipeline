@@ -121,3 +121,21 @@ The cloud flows expect the Google Cloud settings in `.env`, including:
 * `GOOGLE_CLOUD_PROJECT`
 * `OBJECT_STORAGE_BUCKET`
 * `BIGQUERY_DATASET`
+
+For manual Kestra runs, the cloud parent flow also exposes:
+
+* `google_credentials_json_base64`
+
+This lets reviewers paste credentials into the Kestra UI instead of mounting a host-specific credential path into the container. The input is optional; if it is empty, the flow falls back to `GOOGLE_APPLICATION_CREDENTIALS` from `.env`.
+
+Create the UI value from a service account JSON file with:
+
+```bash
+base64 -w0 keys/<service-account-file>.json
+```
+
+On macOS, use:
+
+```bash
+base64 -i keys/<service-account-file>.json | tr -d '\n'
+```

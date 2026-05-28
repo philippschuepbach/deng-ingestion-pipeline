@@ -223,3 +223,6 @@ data/*
 
 # But do not ignore the .gitkeep file itself
 !data/.gitkeep
+
+# Local Google Cloud service account keys
+keys/*.json

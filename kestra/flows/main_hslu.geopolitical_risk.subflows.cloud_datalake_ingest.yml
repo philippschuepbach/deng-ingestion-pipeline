@@ -13,6 +13,9 @@ inputs:
   - id: days
     type: INT
     defaults: 0
+  - id: google_credentials_json_base64
+    type: STRING
+    defaults: ""
 
 tasks:
   - id: run_cloud_datalake_ingest
@@ -23,11 +26,8 @@ tasks:
       set -eu
       cd /workspace
 
-      if [ -f .env ]; then
-        set -a
-        . ./.env
-        set +a
-      fi
+      export KESTRA_GOOGLE_CREDENTIALS_JSON_BASE64='{{ inputs.google_credentials_json_base64 }}'
+      . /workspace/scripts/load_kestra_cloud_env.sh
 
       if [ "{{ inputs.years }}" != "0" ] || [ "{{ inputs.months }}" != "0" ] || [ "{{ inputs.days }}" != "0" ]; then
         uv run --no-dev --no-sync deng-ingestion datalake backfill \

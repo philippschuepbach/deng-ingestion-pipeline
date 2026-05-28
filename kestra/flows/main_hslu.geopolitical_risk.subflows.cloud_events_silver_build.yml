@@ -3,6 +3,11 @@ namespace: hslu.geopolitical_risk.subflows
 labels:
   name: run_cloud_events_silver_build
 
+inputs:
+  - id: google_credentials_json_base64
+    type: STRING
+    defaults: ""
+
 tasks:
   - id: run_cloud_events_silver_build
     type: io.kestra.plugin.scripts.shell.Script
@@ -12,10 +17,7 @@ tasks:
       set -eu
       cd /workspace
 
-      if [ -f .env ]; then
-        set -a
-        . ./.env
-        set +a
-      fi
+      export KESTRA_GOOGLE_CREDENTIALS_JSON_BASE64='{{ inputs.google_credentials_json_base64 }}'
+      . /workspace/scripts/load_kestra_cloud_env.sh
 
       uv run --no-dev --no-sync deng-ingestion warehouse build-events-silver
