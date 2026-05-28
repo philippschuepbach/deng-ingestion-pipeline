@@ -340,7 +340,7 @@ A disabled scheduled trigger may still appear in the Kestra UI under "Next Execu
 To stop the local environment and remove the project containers, networks, and volumes, run:
 
 ```bash
-docker compose --volumes --remove-orphans
+docker compose down --volumes --remove-orphans
 ```
 
 If you used the Pipeline container (`docker compose --profile manual run --rm pipeline...`), you need to specify the `manual` profile to remove the containers created with that profile:
@@ -376,13 +376,351 @@ docker system prune --volumes
 > [!WARNING]
 > The prune commands are not limited to this project. They may remove unused Docker resources from other local projects as well.
 
-## 5. Troubleshooting
+## 5. Final Cloud Pipeline - Terraform, GCS, BigQuery, and Kestra
 
-### 5.1 The pipeline runs for a long time
+This section covers the final cloud-oriented part of the project.
+
+It provisions the Google Cloud data lake and warehouse infrastructure with Terraform, ingests GDELT data into Google Cloud Storage, builds the BigQuery silver layer, and then builds the BigQuery gold monitoring output.
+
+### 5.1 Cloud prerequisites
+
+Before starting this section, make sure you have:
+
+* a Google Cloud project with billing enabled
+* the Google Cloud Storage and BigQuery APIs enabled in that project
+* a Google Cloud service account JSON key with permissions to create and use a Cloud Storage bucket and a BigQuery dataset
+* Terraform installed locally
+* the Docker Compose stack from section 2 available for Kestra orchestration
+
+For the smoothest reviewer workflow, place the service account JSON file in the repository under:
+
+```text
+keys/
+```
+
+Example:
+
+```text
+keys/my-service-account.json
+```
+
+The `keys/*.json` path is ignored by Git.
+
+### 5.2 Provision the cloud infrastructure
+
+Run the provisioning helper from the repository root:
+
+```bash
+./scripts/provision_gcp_infra.sh
+```
+
+The executable bit is tracked in Git, so this should work after a normal clone. If your environment loses executable permissions, run:
+
+```bash
+bash scripts/provision_gcp_infra.sh
+```
+
+If you use fish, run the same command:
+
+```fish
+./scripts/provision_gcp_infra.sh
+```
+
+The script uses Bash internally through its shebang.
+
+If `.env` does not exist yet, the script creates it from `.env.example`.
+
+If `GOOGLE_CLOUD_PROJECT` is missing or still set to the placeholder, the script asks for your Google Cloud project ID:
+
+```text
+Google Cloud project ID:
+```
+
+Enter your project ID, for example:
+
+```text
+my-gcp-project-123
+```
+
+If `GOOGLE_APPLICATION_CREDENTIALS` is empty, the script asks for the path to your service account JSON file:
+
+```text
+Google Cloud credentials JSON path:
+```
+
+Recommended input:
+
+```text
+./keys/my-service-account.json
+```
+
+The script then:
+
+* normalizes `.env` line endings
+* generates unique `OBJECT_STORAGE_BUCKET` and `BIGQUERY_DATASET` values if they are empty
+* writes `terraform/terraform.tfvars` from `.env`
+* runs `terraform init`
+* runs `terraform fmt`
+* runs `terraform validate`
+* runs `terraform apply -var-file="terraform.tfvars"`
+
+When Terraform asks for confirmation, type:
+
+```text
+yes
+```
+
+Expected result:
+
+* a Google Cloud Storage bucket is created
+* a BigQuery dataset is created
+* `.env` contains the generated `OBJECT_STORAGE_BUCKET` and `BIGQUERY_DATASET`
+* `terraform/terraform.tfvars` contains the same project, bucket, and dataset values
+
+### 5.3 Start Kestra for the cloud flow
+
+If the Docker Compose stack is not already running, start it:
+
+```bash
+docker compose up -d
+```
+
+Open Kestra in your browser:
+
+```text
+http://localhost:8080
+```
+
+Use the credentials from `.env` or `.env.example`:
+
+* **Email:** `admin@kestra.io`
+* **Password:** `Admin1234!`
+
+### 5.4 Prepare credentials for the Kestra UI
+
+For manual review runs, the cloud Kestra flow accepts credentials directly through the UI.
+
+Create a single-line base64 value from your service account JSON file:
+
+```bash
+base64 -w0 keys/my-service-account.json
+```
+
+On macOS, use:
+
+```bash
+base64 -i keys/my-service-account.json | tr -d '\n'
+```
+
+Copy the full output. It should be one long line.
+
+> [!NOTE]
+> Paste the base64 output into Kestra, not the raw JSON file content.
+
+### 5.5 Run the cloud pipeline manually
+
+In the Kestra UI, run:
+
+* **Namespace:** `hslu.geopolitical_risk.main`
+* **Flow:** `cloud_pipeline_run_manual`
+
+For a normal incremental run, keep:
+
+* `years = 0`
+* `months = 0`
+* `days = 0`
+
+Paste the base64 service account value into:
+
+```text
+google_credentials_json_base64
+```
+
+Then execute the flow.
+
+Expected result:
+
+* `cloud_datalake_ingest` succeeds
+* `cloud_events_silver_build` succeeds
+* `cloud_risk_alerts_gold_build` succeeds
+
+For a small historical backfill, set for example:
+
+* `days = 1`
+
+and leave `years` and `months` at `0`.
+
+### 5.6 Verify the cloud data lake in Google Cloud Storage
+
+Open the Google Cloud Storage bucket from `.env`:
+
+```text
+OBJECT_STORAGE_BUCKET
+```
+
+Expected object prefixes:
+
+```text
+raw/gdelt/lookups/
+raw/gdelt/export/archives/
+bronze/gdelt/export/events/
+```
+
+Expected result:
+
+* lookup files exist under `raw/gdelt/lookups/`
+* raw ZIP archives exist under `raw/gdelt/export/archives/`
+* extracted event CSV files exist under `bronze/gdelt/export/events/`
+
+### 5.7 Verify the BigQuery warehouse
+
+Open BigQuery and replace `YOUR_PROJECT.YOUR_DATASET` in the queries below with the values from `.env`:
+
+```text
+GOOGLE_CLOUD_PROJECT.BIGQUERY_DATASET
+```
+
+#### Check that the expected tables exist
+
+```sql
+SELECT
+  table_name,
+  table_type,
+  creation_time
+FROM `YOUR_PROJECT.YOUR_DATASET.INFORMATION_SCHEMA.TABLES`
+WHERE table_name IN (
+  'events_bronze_external',
+  'dim_fips_country_codes_external',
+  'events_silver',
+  'risk_alerts_gold'
+)
+ORDER BY table_name;
+```
+
+Expected result:
+
+* the bronze external table exists
+* the FIPS lookup external table exists
+* the silver table exists
+* the gold table exists
+
+#### Check the silver layer
+
+```sql
+SELECT
+  COUNT(*) AS silver_rows,
+  MIN(event_added_ts) AS earliest_event,
+  MAX(event_added_ts) AS latest_event
+FROM `YOUR_PROJECT.YOUR_DATASET.events_silver`;
+```
+
+Expected result:
+
+* `silver_rows` is greater than `0`
+* `earliest_event` and `latest_event` are populated
+
+#### Check the gold output
+
+```sql
+SELECT
+  COUNT(*) AS gold_rows,
+  MIN(time_window_start) AS earliest_window,
+  MAX(time_window_start) AS latest_window,
+  COUNTIF(is_alert) AS alert_rows
+FROM `YOUR_PROJECT.YOUR_DATASET.risk_alerts_gold`;
+```
+
+Expected result:
+
+* `gold_rows` is greater than `0`
+* the window timestamps are populated
+* `alert_rows` returns a count
+
+#### Inspect recent country-level monitoring rows
+
+```sql
+SELECT
+  time_window_start,
+  country_code,
+  country_name,
+  total_event_count,
+  relevant_event_count,
+  protest_event_count,
+  conflict_event_count,
+  diplomatic_tension_event_count,
+  negative_goldstein_sum,
+  weighted_instability_score,
+  is_alert
+FROM `YOUR_PROJECT.YOUR_DATASET.risk_alerts_gold`
+ORDER BY time_window_start DESC, weighted_instability_score DESC
+LIMIT 50;
+```
+
+Expected result:
+
+* rows are grouped by country and hourly time window
+* risk-relevant event counts are populated
+* `weighted_instability_score` and `is_alert` are populated
+
+#### Verify partitioning and clustering
+
+```sql
+SELECT ddl
+FROM `YOUR_PROJECT.YOUR_DATASET.INFORMATION_SCHEMA.TABLES`
+WHERE table_name = 'risk_alerts_gold';
+```
+
+Expected result:
+
+* `risk_alerts_gold` is partitioned by `DATE(time_window_start)`
+* `risk_alerts_gold` is clustered by `country_code, is_alert`
+
+The silver table is created with:
+
+* partitioning by `event_date`
+* clustering by `focus_country_code, event_root_code`
+
+This matches the expected access pattern: analysts filter by time window and country, then inspect risk categories and event roots.
+
+### 5.8 Scheduled cloud pipeline
+
+A scheduled cloud flow is included but disabled by default:
+
+* **Namespace:** `hslu.geopolitical_risk.main`
+* **Flow:** `cloud_pipeline_run_scheduled`
+
+The schedule is configured as:
+
+```text
+0 * * * *
+```
+
+This means once per hour.
+
+It is disabled by default to avoid accidental cloud executions and costs during review.
+
+> [!NOTE]
+> The manual flow is recommended for peer review because credentials can be pasted into the Kestra UI for that run. For unattended scheduled execution, use a container-visible credentials path such as `./keys/my-service-account.json` in `.env`.
+
+### 5.9 Optional cloud cleanup
+
+If you want to remove the cloud resources created by Terraform, run:
+
+```bash
+cd terraform
+terraform destroy -var-file="terraform.tfvars"
+```
+
+> [!WARNING]
+> The storage bucket uses `force_destroy = true`, so destroying the Terraform resources can delete bucket contents.
+
+## 6. Troubleshooting
+
+### 6.1 The pipeline runs for a long time
 
 Use an incremental run without inputs or reduce the backfill window to a small value such as `days = 2`.
 
-### 5.2 No data appears in bronze, silver, or gold
+### 6.2 No data appears in bronze, silver, or gold
 
 Check:
 
@@ -391,13 +729,13 @@ Check:
 * whether you are connected to the correct database in pgAdmin
 * whether `.env` was created from `.env.example` before starting the stack
 
-### 5.3 A batch remains claimed
+### 6.3 A batch remains claimed
 
 If a run is interrupted, `claimed_at` and `claimed_by` may temporarily show an in-progress claim. A successful rerun should normally clear the claim state.
 
-## 6. Additional Information
+## 7. Additional Information
 
-### 6.1 Ingestion Script Entry Point
+### 7.1 Ingestion Script Entry Point
 
 The main Python CLI entry point for the ingestion pipeline is:
 
@@ -412,7 +750,7 @@ docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart
 docker compose run --rm pipeline uv run --no-dev deng-ingestion quickstart --days 2
 ```
 
-### 6.2 Data Source Attribution
+### 7.2 Data Source Attribution
 
 This project uses event data from the **GDELT Project**.
 
@@ -422,7 +760,7 @@ For more information, see:
 
 * [https://www.gdeltproject.org/](https://www.gdeltproject.org/)
 
-### 6.3 License
+### 7.3 License
 
 This project is licensed under the **GNU Affero General Public License v3.0 or later** (**AGPL-3.0-or-later**).
 
